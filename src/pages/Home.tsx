@@ -71,9 +71,8 @@ export default function HomePage() {
               Réseau professionnel immobilier
             </span>
             <h1 className="font-display text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-              Le matching<br />
-              <span className="text-gradient-gold">entre professionnels</span><br />
-              de l'immobilier
+              Swipez, matchez,<br />
+              <span className="text-gradient-gold">signez.</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
               Matchstone connecte vendeurs et acquéreurs qualifiés dans un réseau privé et sécurisé. 
