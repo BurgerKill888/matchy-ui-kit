@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Building2, LayoutDashboard, FileText, Search, MessageSquare, Settings, LogOut, Menu, X, FolderLock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -15,7 +16,14 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -32,7 +40,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
             </Button>
           </div>
