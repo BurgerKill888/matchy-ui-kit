@@ -1,27 +1,54 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Sparkles, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown } from "lucide-react";
+import { Plus, Eye, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, MapPinned } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
+import { getTypeColor } from "@/lib/propertyTypes";
 
 const mockListings = [
-  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureau", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", status: "active", views: 24, matches: 3, viewsTrend: 8, trendDir: "up" as const },
-  { id: 2, title: "Local commercial Marseille", type: "Commerce", surface: "120m²", price: "450 000 €", location: "Marseille 6e", status: "active", views: 12, matches: 1, viewsTrend: 2, trendDir: "down" as const },
-  { id: 3, title: "Immeuble de rapport Lille", type: "Immeuble", surface: "800m²", price: "1 200 000 €", location: "Lille Centre", status: "draft", views: 0, matches: 0, viewsTrend: 0, trendDir: "up" as const },
-  { id: 4, title: "Terrain constructible Bordeaux", type: "Terrain", surface: "2 000m²", price: "750 000 €", location: "Bordeaux Métropole", status: "active", views: 38, matches: 5, viewsTrend: 15, trendDir: "up" as const },
-  { id: 5, title: "Plateau de bureau Lyon", type: "Bureau", surface: "500m²", price: "1 800 000 €", location: "Lyon Part-Dieu", status: "active", views: 18, matches: 2, viewsTrend: 3, trendDir: "up" as const },
+  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureaux", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", status: "active", views: 24, matches: 3, viewsTrend: 8, trendDir: "up" as const, priceTag: "firm" as const, photos: 4 },
+  { id: 2, title: "Local commercial Marseille", type: "Local commercial", surface: "120m²", price: "450 000 €", location: "Marseille 6e", status: "active", views: 12, matches: 1, viewsTrend: 2, trendDir: "down" as const, priceTag: "negotiable" as const, photos: 3 },
+  { id: 3, title: "Immeuble de rapport Lille", type: "Immeuble", surface: "800m²", price: "1 200 000 €", location: "Lille Centre", status: "draft", views: 0, matches: 0, viewsTrend: 0, trendDir: "up" as const, priceTag: "offmarket" as const, photos: 5 },
+  { id: 4, title: "Terrain constructible Bordeaux", type: "Terrain à potentiel", surface: "2 000m²", price: "750 000 €", location: "Bordeaux Métropole", status: "active", views: 38, matches: 5, viewsTrend: 15, trendDir: "up" as const, priceTag: "negotiable" as const, photos: 2 },
+  { id: 5, title: "Plateau de bureau Lyon", type: "Bureaux", surface: "500m²", price: "1 800 000 €", location: "Lyon Part-Dieu", status: "active", views: 18, matches: 2, viewsTrend: 3, trendDir: "up" as const, priceTag: "firm" as const, photos: 6 },
 ];
 
-const typeColors: Record<string, string> = {
-  Bureau: "bg-info",
-  Commerce: "bg-purple-500",
-  Immeuble: "bg-success",
-  Terrain: "bg-amber-700",
-  Entrepôt: "bg-muted-foreground",
-  Logistique: "bg-muted-foreground",
+const priceTagConfig = {
+  firm: { label: "Prix ferme", bg: "bg-[#4A4A4A]", text: "text-white", border: "" },
+  negotiable: { label: "Négociable", bg: "bg-[#D4A843]", text: "text-black", border: "" },
+  offmarket: { label: "Off-market", bg: "bg-[#1A1A2E]", text: "text-[#D4A843]", border: "border border-[#D4A843]" },
 };
+
+function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
+  const [current, setCurrent] = useState(0);
+  return (
+    <div className="relative h-40 bg-gradient-to-br from-secondary to-muted flex items-center justify-center overflow-hidden group">
+      <span className="text-3xl font-display text-muted-foreground/30">{type}</span>
+      {/* Arrows */}
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent((p) => (p - 1 + photos) % photos); }}
+        className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <ChevronLeft size={14} className="text-white" />
+      </button>
+      <button
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent((p) => (p + 1) % photos); }}
+        className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <ChevronRight size={14} className="text-white" />
+      </button>
+      {/* Dots */}
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+        {Array.from({ length: Math.min(photos, 5) }).map((_, i) => (
+          <span key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/40"}`} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface ListingsPageProps {
   mode?: "listings" | "catalog" | "criteria";
@@ -78,10 +105,11 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                 <Link to={`/listings/${item.id}`}>
                   <div className="glass-card rounded-xl overflow-hidden hover:border-primary/30 hover:shadow-card transition-all duration-200 group">
                     {/* Type color band */}
-                    <div className={`h-1 ${typeColors[item.type] || "bg-muted"}`} />
-                    <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                      <span className="text-3xl font-display text-muted-foreground/30">{item.type}</span>
-                    </div>
+                    <div className="h-1" style={{ backgroundColor: getTypeColor(item.type) }} />
+                    
+                    {/* Photo carousel */}
+                    <PhotoCarousel photos={item.photos} type={item.type} />
+                    
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs">
@@ -105,11 +133,30 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                         <span className="flex items-center gap-1"><Ruler size={12} /> {item.surface}</span>
                         <span className="flex items-center gap-1"><Euro size={12} /> {item.price}</span>
                       </div>
+                      
+                      {/* Price tag */}
+                      <div className="mt-2">
+                        {(() => {
+                          const tag = priceTagConfig[item.priceTag];
+                          return (
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ${tag.bg} ${tag.text} ${tag.border}`}>
+                              {item.priceTag === "offmarket" && <Lock size={9} />}
+                              {tag.label}
+                            </span>
+                          );
+                        })()}
+                      </div>
+
                       {item.matches > 0 && (
-                        <div className="mt-3 flex items-center gap-1 text-xs text-primary">
+                        <div className="mt-2 flex items-center gap-1 text-xs text-primary">
                           <Heart size={12} /> {item.matches} match(es)
                         </div>
                       )}
+
+                      {/* Mini map placeholder */}
+                      <div className="mt-3 h-[70px] rounded-lg bg-[#1E2530] flex items-center justify-center">
+                        <MapPinned size={18} className="text-primary" />
+                      </div>
                     </div>
                   </div>
                 </Link>

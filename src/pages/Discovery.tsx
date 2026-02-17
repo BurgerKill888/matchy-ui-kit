@@ -7,16 +7,32 @@ import { Badge } from "@/components/ui/badge";
 import MatchCelebrationModal from "@/components/modals/MatchCelebrationModal";
 import CompatibilityDetailModal from "@/components/CompatibilityDetailModal";
 import EmptyState from "@/components/EmptyState";
+import { getTypeColor } from "@/lib/propertyTypes";
 
 const mockCards = [
-  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureau", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", description: "Magnifique plateau de bureaux au cœur du 8ème, rénové en 2024. Vue dégagée, 8 places de parking.", owner: "SCI Patrimoine", compatibility: 92 },
+  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureaux", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", description: "Magnifique plateau de bureaux au cœur du 8ème, rénové en 2024. Vue dégagée, 8 places de parking.", owner: "SCI Patrimoine", compatibility: 92 },
   { id: 2, title: "Immeuble mixte Lyon 6e", type: "Immeuble", surface: "1 200m²", price: "3 500 000 €", location: "Lyon 6e", description: "Immeuble mixte commerce/habitation, bon rendement locatif. Proche transports en commun.", owner: "Foncière Grand Ouest", compatibility: 85 },
-  { id: 3, title: "Terrain 2ha Bordeaux", type: "Terrain", surface: "20 000m²", price: "1 800 000 €", location: "Bordeaux Métropole", description: "Terrain constructible en zone d'aménagement concerté. Idéal pour programme résidentiel ou mixte.", owner: "Groupe Nexity Régions", compatibility: 78 },
-  { id: 4, title: "Local commercial Marseille", type: "Commerce", surface: "180m²", price: "620 000 €", location: "Marseille Vieux-Port", description: "Emplacement premium pied d'immeuble. Double vitrine, forte visibilité. Libre de suite.", owner: "Cabinet Martin & Associés", compatibility: 88 },
-  { id: 5, title: "Entrepôt logistique Roissy", type: "Logistique", surface: "5 000m²", price: "4 200 000 €", location: "Roissy CDG", description: "Entrepôt classe A aux normes ICPE. Quais de chargement, sprinklers. Proximité autoroute A1.", owner: "Prologis France", compatibility: 71 },
+  { id: 3, title: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", surface: "20 000m²", price: "1 800 000 €", location: "Bordeaux Métropole", description: "Terrain constructible en zone d'aménagement concerté. Idéal pour programme résidentiel ou mixte.", owner: "Groupe Nexity Régions", compatibility: 78 },
+  { id: 4, title: "Local commercial Marseille", type: "Local commercial", surface: "180m²", price: "620 000 €", location: "Marseille Vieux-Port", description: "Emplacement premium pied d'immeuble. Double vitrine, forte visibilité. Libre de suite.", owner: "Cabinet Martin & Associés", compatibility: 88 },
+  { id: 5, title: "Entrepôt logistique Roissy", type: "Entrepôt / activité", surface: "5 000m²", price: "4 200 000 €", location: "Roissy CDG", description: "Entrepôt classe A aux normes ICPE. Quais de chargement, sprinklers. Proximité autoroute A1.", owner: "Prologis France", compatibility: 71 },
+  { id: 6, title: "Appartement T4 Neuilly", type: "Appartement", surface: "120m²", price: "1 450 000 €", location: "Neuilly-sur-Seine", description: "Bel appartement familial avec balcon et vue sur le Bois de Boulogne. Parking en sous-sol.", owner: "Agence Prestige", compatibility: 82 },
+  { id: 7, title: "Maison de maître Versailles", type: "Maison", surface: "280m²", price: "2 100 000 €", location: "Versailles", description: "Maison de maître avec jardin arboré, 6 chambres, dépendances. Proximité gare et commerces.", owner: "SCI du Château", compatibility: 76 },
+  { id: 8, title: "Ensemble mixte Nantes", type: "Ensemble immobilier mixte", surface: "3 200m²", price: "5 600 000 €", location: "Nantes Centre", description: "Ensemble immobilier mixte comprenant commerces en RDC et bureaux aux étages. Bon rendement.", owner: "Foncière Atlantique", compatibility: 90 },
+  { id: 9, title: "Local d'activité Toulouse", type: "Entrepôt / activité", surface: "800m²", price: "380 000 €", location: "Toulouse Basso", description: "Local d'activité avec showroom, bureaux et atelier. Accès poids lourds.", owner: "SCI Midi", compatibility: 74 },
+  { id: 10, title: "Bureau open-space Levallois", type: "Bureaux", surface: "450m²", price: "3 200 000 €", location: "Levallois-Perret", description: "Plateau open-space lumineux, climatisé, fibre optique. 12 places de parking.", owner: "Gecina", compatibility: 87 },
+  { id: 11, title: "Immeuble résidentiel Strasbourg", type: "Immeuble", surface: "900m²", price: "1 900 000 €", location: "Strasbourg Petite France", description: "Immeuble résidentiel de 8 lots dans quartier historique. Rendement 5,2%.", owner: "SCI Alsace", compatibility: 83 },
+  { id: 12, title: "Terrain viabilisé Montpellier", type: "Terrain à potentiel", surface: "5 000m²", price: "950 000 €", location: "Montpellier Nord", description: "Terrain viabilisé en zone AU, permis accordé pour 40 logements.", owner: "Promoteur Sud", compatibility: 79 },
+  { id: 13, title: "Boutique Champs-Élysées", type: "Local commercial", surface: "95m²", price: "8 500 000 €", location: "Paris 8e", description: "Emplacement exceptionnel sur les Champs-Élysées. Vitrine 8m linéaires.", owner: "Foncière Luxe", compatibility: 68 },
+  { id: 14, title: "Maison contemporaine Annecy", type: "Maison", surface: "200m²", price: "1 350 000 €", location: "Annecy-le-Vieux", description: "Villa contemporaine avec vue lac, piscine, 4 chambres. Terrain 1 200m².", owner: "Propriétaire privé", compatibility: 81 },
+  { id: 15, title: "Appartement Haussmannien Paris 16e", type: "Appartement", surface: "180m²", price: "2 400 000 €", location: "Paris 16e", description: "Appartement de réception, moulures, parquet, cheminées. Gardien, digicode.", owner: "SCI Trocadéro", compatibility: 86 },
+  { id: 16, title: "Entrepôt frigorifique Rungis", type: "Entrepôt / activité", surface: "2 500m²", price: "1 800 000 €", location: "Rungis MIN", description: "Entrepôt frigorifique aux normes. Quais réfrigérés, chambres froides.", owner: "Logistique Froid", compatibility: 72 },
+  { id: 17, title: "Ensemble commercial Bordeaux", type: "Ensemble immobilier mixte", surface: "1 800m²", price: "3 900 000 €", location: "Bordeaux Lac", description: "Centre commercial de proximité, 12 cellules, parking 80 places.", owner: "Foncière Gironde", compatibility: 84 },
+  { id: 18, title: "Bureau co-working Paris 11e", type: "Bureaux", surface: "600m²", price: "4 500 000 €", location: "Paris 11e", description: "Espace aménagé en co-working, 80 postes, salles de réunion, rooftop.", owner: "WeWork France", compatibility: 77 },
+  { id: 19, title: "Immeuble neuf Grenoble", type: "Immeuble", surface: "1 500m²", price: "2 800 000 €", location: "Grenoble Centre", description: "Immeuble neuf BBC, 15 appartements, commerces en RDC. Livraison Q2 2026.", owner: "Promoteur Alpes", compatibility: 91 },
+  { id: 20, title: "Local commercial Nice", type: "Local commercial", surface: "150m²", price: "720 000 €", location: "Nice Promenade", description: "Local commercial angle, double exposition, terrasse possible. Zone piétonne.", owner: "SCI Côte d'Azur", compatibility: 80 },
 ];
 
-const typeFilters = ["Tous", "Bureau", "Commerce", "Terrain", "Entrepôt", "Immeuble"];
+const typeFilters = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison", "Ensemble immobilier mixte"];
 const budgetFilters = ["Tous", "< 500K", "500K–1M", "1M–5M", "> 5M"];
 
 function SwipeCard({ card, isTop, onSwipe, onScoreClick }: {
@@ -45,6 +61,8 @@ function SwipeCard({ card, isTop, onSwipe, onScoreClick }: {
       exit={{ x: 500, opacity: 0, transition: { duration: 0.3 } }}
     >
       <div className="h-full glass-card rounded-2xl overflow-hidden shadow-elevated flex flex-col">
+        {/* Type color band */}
+        <div className="h-1" style={{ backgroundColor: getTypeColor(card.type) }} />
         <div className="relative h-44 bg-gradient-to-br from-secondary via-muted to-secondary flex items-center justify-center">
           <Building2 className="text-muted-foreground/15" size={80} />
           <div className="absolute top-4 left-4">
@@ -124,12 +142,19 @@ export default function Discovery() {
         <div className="text-center mb-4">
           <h1 className="font-display text-2xl md:text-3xl font-bold">Découvrir</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {cards.length > 0 ? `${cards.length} opportunité${cards.length > 1 ? "s" : ""} à découvrir` : "Vous avez tout exploré !"}
+            {cards.length > 0
+              ? `Découvrez les ${cards.length} opportunités que Matchstone a sélectionnées pour vous`
+              : "Vous avez tout exploré !"}
           </p>
+          {cards.length > 0 && (
+            <p className="text-xs text-muted-foreground/70 mt-0.5">
+              {cards.length} opportunité{cards.length > 1 ? "s" : ""} à découvrir
+            </p>
+          )}
         </div>
 
         {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-2 mb-2 max-w-lg">
+        <div className="flex flex-wrap justify-center gap-2 mb-2 max-w-2xl">
           {typeFilters.map((f) => (
             <button key={f} onClick={() => setTypeFilter(f)} className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${typeFilter === f ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}>
               {f}

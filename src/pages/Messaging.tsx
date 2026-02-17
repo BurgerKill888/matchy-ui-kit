@@ -1,14 +1,15 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Send, User, MapPin, Euro, Ruler, ExternalLink, FolderOpen, MessageSquare } from "lucide-react";
+import { Clock, Send, User, Euro, Ruler, ExternalLink, FolderOpen, MessageSquare, Lock } from "lucide-react";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
+import { useUserSpace } from "@/contexts/UserSpaceContext";
 
 const mockConversations = [
-  { id: 1, name: "SCI Patrimoine", lastMessage: "Quand pouvons-nous visiter ?", timer: "2j 14h", unread: true, property: "Bureau 350m² Paris 8e", surface: "350m²", price: "2 800 000 €", compatibility: 92 },
-  { id: 2, name: "Foncière Grand Ouest", lastMessage: "Documents reçus, merci.", timer: "5j 02h", unread: false, property: "Immeuble mixte Lyon 6e", surface: "1 200m²", price: "3 500 000 €", compatibility: 85 },
-  { id: 3, name: "Cabinet Martin & Associés", lastMessage: "Offre envoyée.", timer: "1j 08h", unread: true, property: "Local commercial Marseille", surface: "180m²", price: "620 000 €", compatibility: 88 },
+  { id: 1, name: "SCI Patrimoine", lastMessage: "Quand pouvons-nous visiter ?", timer: "2j 14h", unread: true, property: "Bureau 350m² Paris 8e", surface: "350m²", price: "2 800 000 €", compatibility: 92, dataRoomAccess: false },
+  { id: 2, name: "Foncière Grand Ouest", lastMessage: "Documents reçus, merci.", timer: "5j 02h", unread: false, property: "Immeuble mixte Lyon 6e", surface: "1 200m²", price: "3 500 000 €", compatibility: 85, dataRoomAccess: true },
+  { id: 3, name: "Cabinet Martin & Associés", lastMessage: "Offre envoyée.", timer: "1j 08h", unread: true, property: "Local commercial Marseille", surface: "180m²", price: "620 000 €", compatibility: 88, dataRoomAccess: false },
 ];
 
 const mockMessages = [
@@ -20,6 +21,7 @@ const mockMessages = [
 export default function Messaging() {
   const [selectedConv, setSelectedConv] = useState(1);
   const [message, setMessage] = useState("");
+  const { isVendeur } = useUserSpace();
   const conv = mockConversations.find((c) => c.id === selectedConv);
   const hasConversations = mockConversations.length > 0;
 
@@ -90,9 +92,18 @@ export default function Messaging() {
                 <span className="text-primary font-bold shrink-0">{conv.compatibility}%</span>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
-                  <FolderOpen size={12} className="mr-1" /> Data Room
-                </Button>
+                {/* Acquéreur: Data Room button */}
+                {!isVendeur && (
+                  conv.dataRoomAccess ? (
+                    <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
+                      <FolderOpen size={12} className="mr-1" /> Data Room
+                    </Button>
+                  ) : (
+                    <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
+                      <Lock size={12} className="mr-1" /> Demander accès Data Room
+                    </Button>
+                  )
+                )}
                 <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
                   <ExternalLink size={12} className="mr-1" /> Voir l'annonce
                 </Button>
