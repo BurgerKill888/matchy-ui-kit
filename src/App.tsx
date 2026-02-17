@@ -13,6 +13,7 @@ import CreateForm from "./pages/CreateForm";
 import DataRoom from "./pages/DataRoom";
 import Messaging from "./pages/Messaging";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/criteria/create" element={<CreateForm mode="criteria" />} />
             <Route path="/dataroom" element={<DataRoom />} />
             <Route path="/messaging" element={<Messaging />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/legal" element={<Legal type="cgu" />} />
             <Route path="/privacy" element={<Legal type="privacy" />} />

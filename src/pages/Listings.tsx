@@ -1,82 +1,122 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Sparkles, MapPin, Euro, Ruler } from "lucide-react";
+import { Plus, Eye, Sparkles, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+import EmptyState from "@/components/EmptyState";
 
 const mockListings = [
-  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureau", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", status: "active", views: 24, matches: 3 },
-  { id: 2, title: "Local commercial Marseille", type: "Commerce", surface: "120m²", price: "450 000 €", location: "Marseille 6e", status: "active", views: 12, matches: 1 },
-  { id: 3, title: "Immeuble de rapport Lille", type: "Immeuble", surface: "800m²", price: "1 200 000 €", location: "Lille Centre", status: "draft", views: 0, matches: 0 },
-  { id: 4, title: "Terrain constructible Bordeaux", type: "Terrain", surface: "2 000m²", price: "750 000 €", location: "Bordeaux Métropole", status: "active", views: 38, matches: 5 },
-  { id: 5, title: "Plateau de bureau Lyon", type: "Bureau", surface: "500m²", price: "1 800 000 €", location: "Lyon Part-Dieu", status: "active", views: 18, matches: 2 },
+  { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureau", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", status: "active", views: 24, matches: 3, viewsTrend: 8, trendDir: "up" as const },
+  { id: 2, title: "Local commercial Marseille", type: "Commerce", surface: "120m²", price: "450 000 €", location: "Marseille 6e", status: "active", views: 12, matches: 1, viewsTrend: 2, trendDir: "down" as const },
+  { id: 3, title: "Immeuble de rapport Lille", type: "Immeuble", surface: "800m²", price: "1 200 000 €", location: "Lille Centre", status: "draft", views: 0, matches: 0, viewsTrend: 0, trendDir: "up" as const },
+  { id: 4, title: "Terrain constructible Bordeaux", type: "Terrain", surface: "2 000m²", price: "750 000 €", location: "Bordeaux Métropole", status: "active", views: 38, matches: 5, viewsTrend: 15, trendDir: "up" as const },
+  { id: 5, title: "Plateau de bureau Lyon", type: "Bureau", surface: "500m²", price: "1 800 000 €", location: "Lyon Part-Dieu", status: "active", views: 18, matches: 2, viewsTrend: 3, trendDir: "up" as const },
 ];
+
+const typeColors: Record<string, string> = {
+  Bureau: "bg-info",
+  Commerce: "bg-purple-500",
+  Immeuble: "bg-success",
+  Terrain: "bg-amber-700",
+  Entrepôt: "bg-muted-foreground",
+  Logistique: "bg-muted-foreground",
+};
 
 interface ListingsPageProps {
   mode?: "listings" | "catalog" | "criteria";
 }
 
 export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
-  const titles = {
+  const titles: Record<string, string> = {
     listings: "Mes annonces",
     catalog: "Catalogue d'annonces",
     criteria: "Mes fiches de critères",
+  };
+  const baselines: Record<string, string> = {
+    listings: "Gérez vos biens et suivez leur performance",
+    catalog: "Toutes les opportunités qualifiées du réseau",
+    criteria: "Vos critères de recherche actifs sur le réseau",
   };
 
   return (
     <AppLayout>
       <div className="p-6 md:p-8 max-w-6xl">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="font-display text-2xl md:text-3xl font-bold">{titles[mode]}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-3">
+          <div>
+            <h1 className="font-display text-2xl md:text-3xl font-bold">{titles[mode]}</h1>
+            <p className="text-muted-foreground text-sm mt-1">{baselines[mode]}</p>
+          </div>
           {mode !== "catalog" && (
             <Link to={mode === "criteria" ? "/criteria/create" : "/listings/create"}>
-              <Button className="glow-gold">
+              <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
                 <Plus size={16} className="mr-2" /> {mode === "criteria" ? "Nouvelle fiche" : "Nouvelle annonce"}
               </Button>
             </Link>
           )}
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {mockListings.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <Link to={`/listings/${item.id}`}>
-                <div className="glass-card rounded-xl overflow-hidden hover:border-primary/30 transition-all group">
-                  <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-                    <span className="text-3xl font-display text-muted-foreground/30">{item.type}</span>
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs">
-                        {item.status === "active" ? "Active" : "Brouillon"}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Eye size={12} /> {item.views}
-                      </span>
+        {mockListings.length === 0 ? (
+          <EmptyState
+            icon={Plus}
+            title={mode === "criteria" ? "Aucune fiche de recherche" : "Aucune annonce"}
+            subtitle={mode === "criteria"
+              ? "Créez votre première fiche de recherche pour découvrir des opportunités compatibles."
+              : "Publiez votre première annonce pour commencer à recevoir des matches qualifiés."}
+            ctaLabel={mode === "criteria" ? "+ Nouvelle fiche" : "+ Publier une annonce"}
+            ctaHref={mode === "criteria" ? "/criteria/create" : "/listings/create"}
+          />
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
+            {mockListings.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Link to={`/listings/${item.id}`}>
+                  <div className="glass-card rounded-xl overflow-hidden hover:border-primary/30 hover:shadow-card transition-all duration-200 group">
+                    {/* Type color band */}
+                    <div className={`h-1 ${typeColors[item.type] || "bg-muted"}`} />
+                    <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+                      <span className="text-3xl font-display text-muted-foreground/30">{item.type}</span>
                     </div>
-                    <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
-                    <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><MapPin size={12} /> {item.location}</span>
-                      <span className="flex items-center gap-1"><Ruler size={12} /> {item.surface}</span>
-                      <span className="flex items-center gap-1"><Euro size={12} /> {item.price}</span>
-                    </div>
-                    {item.matches > 0 && (
-                      <div className="mt-3 flex items-center gap-1 text-xs text-primary">
-                        <Sparkles size={12} /> {item.matches} match(es)
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs">
+                          {item.status === "active" ? "Active" : "Brouillon"}
+                        </Badge>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Eye size={12} /> {item.views}
+                          </span>
+                          {item.viewsTrend > 0 && (
+                            <span className={`text-[10px] flex items-center gap-0.5 ${item.trendDir === "up" ? "text-success" : "text-destructive"}`}>
+                              {item.trendDir === "up" ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                              {item.viewsTrend}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    )}
+                      <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1"><MapPin size={12} /> {item.location}</span>
+                        <span className="flex items-center gap-1"><Ruler size={12} /> {item.surface}</span>
+                        <span className="flex items-center gap-1"><Euro size={12} /> {item.price}</span>
+                      </div>
+                      {item.matches > 0 && (
+                        <div className="mt-3 flex items-center gap-1 text-xs text-primary">
+                          <Heart size={12} /> {item.matches} match(es)
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );
