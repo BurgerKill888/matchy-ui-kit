@@ -1,64 +1,82 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Clock, Heart, FileText, Eye, ArrowRight, Search, MessageSquare, TrendingUp, Compass } from "lucide-react";
+import {
+  Plus, Clock, Heart, FileText, Eye, ArrowRight, Search, MessageSquare,
+  TrendingUp, Compass, TrendingDown, AlertTriangle, Target, CheckCircle2,
+  BarChart3
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
+import EmptyState from "@/components/EmptyState";
 
 // --- Mock Data ---
 const vendeurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", compatibility: 92, status: "new" as const },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 02h", compatibility: 85, status: "in_conversation" as const },
-  { id: 3, label: "Terrain 2ha Bordeaux", owner: "Nexity Régions", timer: "1j 08h", compatibility: 78, status: "new" as const },
+  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new" as const },
+  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation" as const },
+  { id: 3, label: "Terrain 2ha Bordeaux", owner: "Nexity Régions", timer: "0j 18h", timerHours: 18, compatibility: 78, status: "new" as const },
 ];
 
-const vendeurAnnonces = [
-  { id: 1, title: "Bureau 350m² Paris 8e", status: "active" as const, views: 24, matches: 3 },
-  { id: 2, title: "Local commercial Marseille", status: "active" as const, views: 12, matches: 1 },
-  { id: 3, title: "Immeuble de rapport Lille", status: "draft" as const, views: 0, matches: 0 },
+const vendeurAlerts = [
+  { id: 1, icon: AlertTriangle, text: "Immeuble de rapport Lille — Brouillon depuis 5 jours", cta: "Finaliser", href: "/listings/3", color: "text-warning" },
+  { id: 2, icon: TrendingDown, text: "Local commercial Marseille — Aucun match depuis 7 jours", cta: "Ajuster", href: "/listings/2", color: "text-destructive" },
+  { id: 3, icon: Target, text: "Terrain Bordeaux — 5 matches générés, 0 conversation", cta: "Consulter", href: "/matches", color: "text-info" },
+  { id: 4, icon: CheckCircle2, text: "Bureau Paris 8e — Performance optimale, 3 matches actifs", cta: "Voir", href: "/listings/1", color: "text-success" },
 ];
 
 const acquereurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", compatibility: 92, status: "new" as const },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 02h", compatibility: 85, status: "in_conversation" as const },
+  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new" as const },
+  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "0j 06h", timerHours: 6, compatibility: 85, status: "in_conversation" as const },
 ];
 
-const acquereurFiches = [
-  { id: 1, title: "Bureaux 200-500m² Paris", status: "active" as const, matches: 3, budget: "800K - 1.5M€" },
-  { id: 2, title: "Local commercial Bordeaux centre", status: "active" as const, matches: 1, budget: "200K - 500K€" },
-  { id: 3, title: "Entrepôt logistique IDF", status: "draft" as const, matches: 0, budget: "1M - 3M€" },
+const acquereurAlerts = [
+  { id: 1, icon: Compass, text: "5 nouvelles opportunités correspondent à votre fiche Bureaux IDF", cta: "Découvrir", href: "/discovery", color: "text-primary" },
+  { id: 2, icon: AlertTriangle, text: "Fiche Entrepôts Lyon — Aucun résultat depuis 14 jours", cta: "Élargir", href: "/criteria/1", color: "text-warning" },
+  { id: 3, icon: MessageSquare, text: "Match Immeuble Lyon 6e — En conversation depuis 3j, pas de réponse", cta: "Relancer", href: "/messaging", color: "text-info" },
+  { id: 4, icon: CheckCircle2, text: "Fiche Terrains Bordeaux — 3 matches actifs, bonne couverture", cta: "Voir", href: "/criteria/2", color: "text-success" },
 ];
 
 // --- KPI Card ---
-function KpiCard({ label, value, icon: Icon, color, delay }: {
-  label: string; value: string; icon: React.ElementType; color: string; delay: number;
+function KpiCard({ label, value, icon: Icon, color, trend, trendValue, delay }: {
+  label: string; value: string; icon: React.ElementType; color: string; trend: "up" | "down"; trendValue: string; delay: number;
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="glass-card rounded-xl p-4"
+      className="glass-card rounded-xl p-4 hover:border-primary/20 transition-all duration-200 hover:shadow-card"
     >
       <div className="flex items-center gap-2 mb-2">
         <Icon size={16} className={color} />
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <p className="font-display text-2xl font-bold">{value}</p>
+      <div className={`flex items-center gap-1 mt-1 text-xs ${trend === "up" ? "text-success" : "text-destructive"}`}>
+        {trend === "up" ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+        <span>{trendValue} cette semaine</span>
+      </div>
     </motion.div>
   );
 }
 
+// --- Timer color helper ---
+function getTimerStyle(hours: number) {
+  if (hours < 24) return "text-destructive";
+  if (hours < 48) return "text-warning";
+  return "text-muted-foreground";
+}
+
 // --- Match Card ---
 function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: number }) {
+  const timerColor = getTimerStyle(match.timerHours);
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.08 }}
-      className="glass-card rounded-xl p-4 flex items-center justify-between group hover:border-primary/30 transition-colors"
+      className="glass-card rounded-xl p-4 flex items-center justify-between group hover:border-primary/30 hover:shadow-card transition-all duration-200"
     >
       <div className="flex items-center gap-4">
         <div className="relative w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -71,7 +89,8 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
           <p className="font-semibold text-sm">{match.label}</p>
           <p className="text-xs text-muted-foreground">{match.owner}</p>
           <div className="flex items-center gap-3 mt-1">
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <span className={`text-xs flex items-center gap-1 font-medium ${timerColor}`}>
+              {match.timerHours < 24 && <AlertTriangle size={10} />}
               <Clock size={10} /> {match.timer}
             </span>
             <span className="text-xs font-semibold text-primary">{match.compatibility}%</span>
@@ -82,8 +101,30 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
         </div>
       </div>
       <Link to="/messaging">
-        <Button size="sm" variant={match.status === "new" ? "default" : "outline"} className={match.status === "new" ? "glow-gold" : ""}>
+        <Button size="sm" variant={match.status === "new" ? "default" : "outline"} className={`transition-transform duration-200 hover:scale-[1.02] ${match.status === "new" ? "glow-gold" : ""}`}>
           Voir <ArrowRight size={14} className="ml-1" />
+        </Button>
+      </Link>
+    </motion.div>
+  );
+}
+
+// --- Alert Card ---
+function AlertCard({ alert, index }: { alert: typeof vendeurAlerts[0]; index: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.3 + index * 0.06 }}
+      className="glass-card rounded-xl p-4 flex items-center justify-between hover:border-primary/20 hover:shadow-card transition-all duration-200"
+    >
+      <div className="flex items-center gap-3">
+        <alert.icon size={18} className={alert.color} />
+        <p className="text-sm text-foreground/90">{alert.text}</p>
+      </div>
+      <Link to={alert.href}>
+        <Button size="sm" variant="outline" className="shrink-0 transition-transform duration-200 hover:scale-[1.02]">
+          {alert.cta}
         </Button>
       </Link>
     </motion.div>
@@ -93,11 +134,31 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
 // --- Dashboard Vendeur ---
 function VendeurDashboard() {
   const kpis = [
-    { label: "Annonces actives", value: String(vendeurAnnonces.filter(a => a.status === "active").length), icon: FileText, color: "text-primary" },
-    { label: "Vues reçues", value: "54", icon: Eye, color: "text-info" },
-    { label: "Matches en cours", value: String(vendeurMatches.length), icon: Heart, color: "text-primary" },
-    { label: "Taux de match", value: "28%", icon: TrendingUp, color: "text-success" },
+    { label: "Annonces actives", value: "2", icon: FileText, color: "text-primary", trend: "up" as const, trendValue: "↑ 1" },
+    { label: "Vues reçues", value: "54", icon: Eye, color: "text-info", trend: "up" as const, trendValue: "↑ 12%" },
+    { label: "Matches en cours", value: "3", icon: Heart, color: "text-primary", trend: "up" as const, trendValue: "↑ 2" },
+    { label: "Taux de match", value: "28%", icon: BarChart3, color: "text-success", trend: "up" as const, trendValue: "↑ 3%" },
   ];
+
+  const hasData = true; // toggle for empty state
+
+  if (!hasData) {
+    return (
+      <div className="p-6 md:p-8 max-w-6xl space-y-8">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold">Espace Vendeur</h1>
+          <p className="text-muted-foreground mt-1">Bienvenue dans votre espace vendeur Matchstone</p>
+        </div>
+        <EmptyState
+          icon={FileText}
+          title="Votre espace vendeur est prêt"
+          subtitle="Publiez votre première annonce pour commencer à recevoir des matches qualifiés."
+          ctaLabel="+ Publier une annonce"
+          ctaHref="/listings/create"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-6xl space-y-8">
@@ -107,7 +168,7 @@ function VendeurDashboard() {
           <p className="text-muted-foreground mt-1">Bienvenue dans votre espace vendeur Matchstone</p>
         </div>
         <Link to="/listings/create">
-          <Button className="glow-gold">
+          <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
             <Plus size={16} className="mr-2" /> Publier une annonce
           </Button>
         </Link>
@@ -117,46 +178,21 @@ function VendeurDashboard() {
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 
-      <Tabs defaultValue="matches" className="space-y-6">
-        <TabsList className="bg-secondary border border-border">
-          <TabsTrigger value="matches" className="gap-1.5"><Heart size={14} /> Matches</TabsTrigger>
-          <TabsTrigger value="annonces" className="gap-1.5"><FileText size={14} /> Mes annonces</TabsTrigger>
-        </TabsList>
+      {/* Matches */}
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+          <Heart size={18} className="text-primary" /> Matches récents
+        </h2>
+        {vendeurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)}
+      </div>
 
-        <TabsContent value="matches" className="space-y-3">
-          {vendeurMatches.length === 0 ? (
-            <EmptyState icon={Heart} message="Pas encore de matches" ctaLabel="Publier une annonce" ctaHref="/listings/create" />
-          ) : (
-            vendeurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)
-          )}
-        </TabsContent>
-
-        <TabsContent value="annonces" className="space-y-3">
-          {vendeurAnnonces.map((annonce, i) => (
-            <motion.div
-              key={annonce.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="glass-card rounded-xl p-4 flex items-center justify-between hover:border-primary/30 transition-colors"
-            >
-              <div>
-                <p className="font-semibold text-sm">{annonce.title}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <Badge variant={annonce.status === "active" ? "default" : "secondary"} className="text-xs">
-                    {annonce.status === "active" ? "Active" : "Brouillon"}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground flex items-center gap-1"><Eye size={12} /> {annonce.views}</span>
-                  <span className="text-xs text-primary flex items-center gap-1"><Heart size={12} /> {annonce.matches}</span>
-                </div>
-              </div>
-              <Link to={`/listings/${annonce.id}`}>
-                <Button size="sm" variant="outline">Gérer</Button>
-              </Link>
-            </motion.div>
-          ))}
-        </TabsContent>
-      </Tabs>
+      {/* Actions recommandées */}
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+          <Target size={18} className="text-primary" /> Actions recommandées
+        </h2>
+        {vendeurAlerts.map((a, i) => <AlertCard key={a.id} alert={a} index={i} />)}
+      </div>
     </div>
   );
 }
@@ -164,11 +200,31 @@ function VendeurDashboard() {
 // --- Dashboard Acquéreur ---
 function AcquereurDashboard() {
   const kpis = [
-    { label: "Fiches actives", value: String(acquereurFiches.filter(f => f.status === "active").length), icon: FileText, color: "text-primary" },
-    { label: "Opportunités découvertes", value: "18", icon: Search, color: "text-info" },
-    { label: "Matches en cours", value: String(acquereurMatches.length), icon: Heart, color: "text-primary" },
-    { label: "Taux de match", value: "35%", icon: TrendingUp, color: "text-success" },
+    { label: "Fiches actives", value: "2", icon: FileText, color: "text-primary", trend: "up" as const, trendValue: "↑ 1" },
+    { label: "Opportunités découvertes", value: "18", icon: Search, color: "text-info", trend: "up" as const, trendValue: "↑ 5" },
+    { label: "Matches en cours", value: "2", icon: Heart, color: "text-primary", trend: "down" as const, trendValue: "↓ 1" },
+    { label: "Taux de match", value: "35%", icon: BarChart3, color: "text-success", trend: "up" as const, trendValue: "↑ 8%" },
   ];
+
+  const hasData = true;
+
+  if (!hasData) {
+    return (
+      <div className="p-6 md:p-8 max-w-6xl space-y-8">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold">Espace Acquéreur</h1>
+          <p className="text-muted-foreground mt-1">Bienvenue dans votre espace acquéreur Matchstone</p>
+        </div>
+        <EmptyState
+          icon={Search}
+          title="Votre espace acquéreur est prêt"
+          subtitle="Créez votre première fiche de recherche pour découvrir des opportunités compatibles."
+          ctaLabel="+ Nouvelle fiche de recherche"
+          ctaHref="/criteria/create"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 md:p-8 max-w-6xl space-y-8">
@@ -179,12 +235,12 @@ function AcquereurDashboard() {
         </div>
         <div className="flex gap-2">
           <Link to="/discovery">
-            <Button className="glow-gold">
+            <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
               <Compass size={16} className="mr-2" /> Découvrir
             </Button>
           </Link>
           <Link to="/criteria/create">
-            <Button variant="outline">
+            <Button variant="outline" className="transition-transform duration-200 hover:scale-[1.02]">
               <Plus size={16} className="mr-2" /> Nouvelle fiche
             </Button>
           </Link>
@@ -195,61 +251,21 @@ function AcquereurDashboard() {
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 
-      <Tabs defaultValue="matches" className="space-y-6">
-        <TabsList className="bg-secondary border border-border">
-          <TabsTrigger value="matches" className="gap-1.5"><Heart size={14} /> Matches</TabsTrigger>
-          <TabsTrigger value="fiches" className="gap-1.5"><FileText size={14} /> Mes fiches</TabsTrigger>
-        </TabsList>
+      {/* Matches */}
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+          <Heart size={18} className="text-primary" /> Matches récents
+        </h2>
+        {acquereurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)}
+      </div>
 
-        <TabsContent value="matches" className="space-y-3">
-          {acquereurMatches.length === 0 ? (
-            <EmptyState icon={Heart} message="Pas encore de matches" ctaLabel="Découvrir" ctaHref="/discovery" />
-          ) : (
-            acquereurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)
-          )}
-        </TabsContent>
-
-        <TabsContent value="fiches" className="space-y-3">
-          {acquereurFiches.map((fiche, i) => (
-            <motion.div
-              key={fiche.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="glass-card rounded-xl p-4 flex items-center justify-between hover:border-primary/30 transition-colors"
-            >
-              <div>
-                <p className="font-semibold text-sm">{fiche.title}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <Badge variant={fiche.status === "active" ? "default" : "secondary"} className="text-xs">
-                    {fiche.status === "active" ? "Active" : "Brouillon"}
-                  </Badge>
-                  <span className="text-xs text-primary flex items-center gap-1"><Heart size={12} /> {fiche.matches}</span>
-                  <span className="text-xs text-muted-foreground">{fiche.budget}</span>
-                </div>
-              </div>
-              <Link to={`/criteria/${fiche.id}`}>
-                <Button size="sm" variant="outline">Modifier</Button>
-              </Link>
-            </motion.div>
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-// --- Empty State ---
-function EmptyState({ icon: Icon, message, ctaLabel, ctaHref }: {
-  icon: React.ElementType; message: string; ctaLabel: string; ctaHref: string;
-}) {
-  return (
-    <div className="text-center py-12">
-      <Icon className="text-muted-foreground mx-auto mb-3" size={40} />
-      <p className="text-muted-foreground">{message}</p>
-      <Link to={ctaHref}>
-        <Button className="mt-4 glow-gold">{ctaLabel}</Button>
-      </Link>
+      {/* Actions recommandées */}
+      <div className="space-y-3">
+        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
+          <Target size={18} className="text-primary" /> Actions recommandées
+        </h2>
+        {acquereurAlerts.map((a, i) => <AlertCard key={a.id} alert={a} index={i} />)}
+      </div>
     </div>
   );
 }

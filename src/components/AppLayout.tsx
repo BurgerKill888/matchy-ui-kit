@@ -5,8 +5,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useUserSpace, UserSpace } from "@/contexts/UserSpaceContext";
-import { motion } from "framer-motion";
+import { useUserSpace } from "@/contexts/UserSpaceContext";
+import { motion, AnimatePresence } from "framer-motion";
+import NotificationPanel from "@/components/NotificationPanel";
 
 type NavItem = { label: string; icon: React.ElementType; href: string; accent?: boolean };
 
@@ -15,7 +16,7 @@ const vendeurNav: NavItem[] = [
   { label: "Mes matches", icon: Heart, href: "/matches" },
   { label: "Mes annonces", icon: FileText, href: "/listings" },
   { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
-  { label: "Paramètres", icon: Settings, href: "/profile" },
+  { label: "Paramètres", icon: Settings, href: "/settings" },
 ];
 
 const acquereurNav: NavItem[] = [
@@ -25,7 +26,7 @@ const acquereurNav: NavItem[] = [
   { label: "Mes fiches", icon: FileText, href: "/criteria" },
   { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
   { label: "Catalogue", icon: BookOpen, href: "/catalog" },
-  { label: "Paramètres", icon: Settings, href: "/profile" },
+  { label: "Paramètres", icon: Settings, href: "/settings" },
 ];
 
 function SpaceToggle() {
@@ -84,7 +85,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
           <SpaceToggle />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {isAcquereur && (
               <Link to="/discovery">
                 <Button size="sm" className="glow-gold hidden sm:flex">
@@ -92,6 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Button>
               </Link>
             )}
+            <NotificationPanel />
             <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
             </Button>
@@ -111,7 +113,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
                     active
                       ? "bg-primary/10 text-primary"
                       : item.accent
@@ -129,7 +131,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          {/* Space indicator at bottom */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
@@ -145,7 +146,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Main */}
         <main className="flex-1 min-w-0">
-          {children}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>
