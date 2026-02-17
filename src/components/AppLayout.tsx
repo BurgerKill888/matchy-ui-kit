@@ -1,28 +1,69 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Building2, LayoutDashboard, FileText, Search, MessageSquare, Settings, LogOut, Menu, X, FolderLock, Heart, Compass } from "lucide-react";
+import {
+  Building2, LayoutDashboard, FileText, Search, MessageSquare,
+  Settings, LogOut, Menu, X, Heart, Compass, BookOpen
+} from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useUserSpace, UserSpace } from "@/contexts/UserSpaceContext";
+import { motion } from "framer-motion";
 
+type NavItem = { label: string; icon: React.ElementType; href: string; accent?: boolean };
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Découvrir", icon: Compass, href: "/discovery", accent: true },
+const vendeurNav: NavItem[] = [
+  { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Mes matches", icon: Heart, href: "/matches" },
   { label: "Mes annonces", icon: FileText, href: "/listings" },
-  { label: "Catalogue", icon: Search, href: "/catalog" },
-  { label: "Data Room", icon: FolderLock, href: "/dataroom" },
   { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
-  { label: "Profil", icon: Settings, href: "/profile" },
+  { label: "Paramètres", icon: Settings, href: "/profile" },
 ];
+
+const acquereurNav: NavItem[] = [
+  { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Découvrir", icon: Compass, href: "/discovery", accent: true },
+  { label: "Mes matches", icon: Heart, href: "/matches" },
+  { label: "Mes fiches", icon: FileText, href: "/criteria" },
+  { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
+  { label: "Catalogue", icon: BookOpen, href: "/catalog" },
+  { label: "Paramètres", icon: Settings, href: "/profile" },
+];
+
+function SpaceToggle() {
+  const { space, setSpace } = useUserSpace();
+
+  return (
+    <div className="flex items-center gap-0.5 p-1 rounded-xl bg-secondary border border-border">
+      {(["vendeur", "acquereur"] as const).map((s) => (
+        <button
+          key={s}
+          onClick={() => setSpace(s)}
+          className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
+            space === s ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {space === s && (
+            <motion.div
+              layoutId="space-toggle"
+              className="absolute inset-0 bg-primary rounded-lg glow-gold"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+            />
+          )}
+          <span className="relative z-10">
+            {s === "vendeur" ? "Espace Vendeur" : "Espace Acquéreur"}
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { space, isAcquereur } = useUserSpace();
 
-  const handleLogout = () => {
-    navigate("/");
-  };
+  const navItems = isAcquereur ? acquereurNav : vendeurNav;
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -35,16 +76,23 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
             <Link to="/dashboard" className="flex items-center gap-2">
               <Building2 className="text-primary" size={28} />
-              <span className="font-display text-xl font-bold text-foreground">Match<span className="text-primary">stone</span></span>
+              <span className="font-display text-xl font-bold text-foreground hidden sm:inline">
+                Match<span className="text-primary">stone</span>
+              </span>
             </Link>
           </div>
+
+          <SpaceToggle />
+
           <div className="flex items-center gap-2">
-            <Link to="/discovery">
-              <Button size="sm" className="glow-gold hidden sm:flex">
-                <Compass size={16} className="mr-1.5" /> Découvrir
-              </Button>
-            </Link>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
+            {isAcquereur && (
+              <Link to="/discovery">
+                <Button size="sm" className="glow-gold hidden sm:flex">
+                  <Compass size={16} className="mr-1.5" /> Découvrir
+                </Button>
+              </Link>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
             </Button>
           </div>
@@ -53,10 +101,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 w-64 h-[calc(100vh-4rem)] bg-card border-r border-border transition-transform duration-200`}>
-          <nav className="flex flex-col gap-1 p-4">
+        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 w-60 h-[calc(100vh-4rem)] bg-card border-r border-border transition-transform duration-200 flex flex-col`}>
+          <nav className="flex flex-col gap-1 p-4 flex-1">
             {navItems.map((item) => {
-              const active = location.pathname === item.href || (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+              const active = location.pathname === item.href ||
+                (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
@@ -73,12 +122,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <item.icon size={18} />
                   {item.label}
                   {item.accent && !active && (
-                    <span className="ml-auto w-2 h-2 rounded-full bg-primary glow-gold" />
+                    <span className="ml-auto w-2 h-2 rounded-full bg-primary animate-pulse-gold" />
                   )}
                 </Link>
               );
             })}
           </nav>
+
+          {/* Space indicator at bottom */}
+          <div className="p-4 border-t border-border">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
+              {space === "vendeur" ? "Mode Vendeur" : "Mode Acquéreur"}
+            </div>
+          </div>
         </aside>
 
         {/* Overlay */}
