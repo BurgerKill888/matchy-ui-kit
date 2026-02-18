@@ -155,13 +155,14 @@ export default function AcquereurDataRoom() {
                         <ExternalLink size={11} /> Voir l'annonce
                       </Button>
                     </Link>
-                    <Button
-                      size="sm"
-                      className="text-xs h-7 gap-1 glow-gold transition-transform duration-200 hover:scale-[1.02]"
-                      onClick={() => setExpanded(expanded === room.id ? null : room.id)}
-                    >
-                      <FolderOpen size={11} /> Voir les documents
-                    </Button>
+                    <Link to={`/dataroom/${room.id}`}>
+                      <Button
+                        size="sm"
+                        className="text-xs h-7 gap-1 glow-gold transition-transform duration-200 hover:scale-[1.02]"
+                      >
+                        <FolderOpen size={11} /> Voir les documents
+                      </Button>
+                    </Link>
                   </div>
                 </div>
 

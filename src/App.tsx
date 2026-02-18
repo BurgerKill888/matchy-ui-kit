@@ -42,6 +42,7 @@ const App = () => (
             <Route path="/criteria/create" element={<CreateForm mode="criteria" />} />
             <Route path="/acquereur-dataroom" element={<AcquereurDataRoom />} />
             <Route path="/dataroom" element={<DataRoom />} />
+            <Route path="/dataroom/:id" element={<DataRoom />} />
             <Route path="/messaging" element={<Messaging />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
