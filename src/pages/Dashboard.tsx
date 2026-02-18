@@ -1,10 +1,9 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Plus, Clock, Heart, FileText, Eye, ArrowRight, Search,
-  Compass, AlertTriangle, TrendingUp, Percent, Star
+  Compass, AlertTriangle, Star
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -12,19 +11,19 @@ import { useUserSpace } from "@/contexts/UserSpaceContext";
 
 // --- Mock Data ---
 const vendeurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 32, status: "new" as const, premium: false },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 629", timerHours: 122, compatibility: 85, status: "in_conversation" as const, premium: false },
-  { id: 3, label: "Terrain 2ha Bordeaux", owner: "Nexity Régions", timer: "5 · 19h", timerHours: 19, compatibility: 78, status: "new" as const, premium: true },
+  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, status: "new" as const, premium: false },
+  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 06h", timerHours: 122, status: "in_conversation" as const, premium: false },
+  { id: 3, label: "Terrain 2ha Bordeaux", owner: "Nexity Régions", timer: "0j 19h", timerHours: 19, status: "new" as const, premium: true },
 ];
 
 const acquereurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new" as const, premium: false },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "0j 06h", timerHours: 6, compatibility: 85, status: "in_conversation" as const, premium: false },
+  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, status: "new" as const, premium: false },
+  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "0j 06h", timerHours: 6, status: "in_conversation" as const, premium: false },
 ];
 
 // --- KPI Card ---
-function KpiCard({ label, value, icon: Icon, trend, delay }: {
-  label: string; value: string; icon: React.ElementType; trend: string; delay: number;
+function KpiCard({ label, value, icon: Icon, delay }: {
+  label: string; value: string; icon: React.ElementType; delay: number;
 }) {
   return (
     <motion.div
@@ -38,9 +37,6 @@ function KpiCard({ label, value, icon: Icon, trend, delay }: {
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <p className="font-display text-3xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-primary flex items-center gap-1">
-        <ArrowRight size={10} /> {trend}
-      </p>
     </motion.div>
   );
 }
@@ -82,17 +78,13 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
         </div>
       </div>
 
-      {/* Right: timer + progress + % + button */}
+      {/* Right: timer + button */}
       <div className="flex items-center gap-3 shrink-0 ml-4">
         <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
           {match.premium ? <Star size={11} className="text-primary" /> : <Clock size={11} className="text-muted-foreground" />}
           {match.timerHours < 24 && <AlertTriangle size={11} className="text-destructive" />}
           <span className={timerColor}>{match.timer}</span>
         </div>
-        <div className="w-20 hidden sm:flex items-center gap-2">
-          <Progress value={match.compatibility} className="h-1.5 flex-1" />
-        </div>
-        <span className="text-xs text-muted-foreground w-8 text-right">{match.compatibility}%</span>
         <Link to="/messaging">
           <Button size="sm" className="text-xs px-3 h-8 glow-gold">
             Voir <ArrowRight size={12} className="ml-1" />
@@ -106,10 +98,9 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
 // --- Dashboard Vendeur ---
 function VendeurDashboard() {
   const kpis = [
-    { label: "Annonces actives", value: "2", icon: FileText, trend: "→ 1 cette semaine" },
-    { label: "Vues reçues", value: "54", icon: Eye, trend: "→ 1 12% cette semaine" },
-    { label: "Matchs en cours", value: "3", icon: Heart, trend: "→ 2 cette semaine" },
-    { label: "Taux de match", value: "28%", icon: Percent, trend: "→ 1 3% cette semaine" },
+    { label: "Annonces actives", value: "2", icon: FileText },
+    { label: "Vues reçues", value: "54", icon: Eye },
+    { label: "Matchs en cours", value: "3", icon: Heart },
   ];
 
   return (
@@ -126,7 +117,7 @@ function VendeurDashboard() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 
@@ -143,10 +134,9 @@ function VendeurDashboard() {
 // --- Dashboard Acquéreur ---
 function AcquereurDashboard() {
   const kpis = [
-    { label: "Fiches actives", value: "2", icon: FileText, trend: "→ 1 cette semaine" },
-    { label: "Opportunités", value: "18", icon: Search, trend: "→ +3 cette semaine" },
-    { label: "Matchs en cours", value: "2", icon: Heart, trend: "→ 2 cette semaine" },
-    { label: "Taux de match", value: "41%", icon: TrendingUp, trend: "→ +5% cette semaine" },
+    { label: "Fiches actives", value: "2", icon: FileText },
+    { label: "Opportunités", value: "18", icon: Search },
+    { label: "Matchs en cours", value: "2", icon: Heart },
   ];
 
   return (
@@ -170,7 +160,7 @@ function AcquereurDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 
