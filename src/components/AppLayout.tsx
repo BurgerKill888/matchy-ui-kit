@@ -68,7 +68,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = isAcquereur ? acquereurNav : vendeurNav;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background" data-space={space}>
       {/* Top Nav */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 md:px-6 h-16">
