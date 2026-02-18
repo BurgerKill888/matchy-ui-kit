@@ -43,37 +43,39 @@ const priceTagConfig = {
 function DpeBar({ dpe }: { dpe: string | null }) {
   if (!dpe) return null;
   const classes = ["A", "B", "C", "D", "E", "F", "G"];
-  const widths = [40, 52, 64, 76, 88, 100, 100];
   const colors = ["#00A550", "#51B848", "#BAD429", "#FFF100", "#F5A623", "#F26423", "#E31837"];
-  const textColors = ["white", "white", "black", "black", "black", "white", "white"];
+  const activeIdx = classes.indexOf(dpe);
+
   return (
-    <div className="mt-3 space-y-0.5">
-      <div className="flex items-center gap-1 mb-1">
+    <div className="mt-3">
+      <div className="flex items-center gap-1 mb-3">
         <Zap size={11} className="text-muted-foreground" />
-        <span className="text-[10px] text-muted-foreground font-medium">DPE</span>
+        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Performance énergétique (DPE)</span>
       </div>
-      {classes.map((cls, idx) => {
-        const isActive = cls === dpe;
-        return (
-          <div key={cls} className="flex items-center gap-1.5">
-            <div
-              className={`flex items-center justify-end pr-2 rounded-sm transition-all ${isActive ? "ring-1 ring-white/40 shadow-sm" : "opacity-40"}`}
-              style={{
-                width: `${widths[idx]}%`,
-                backgroundColor: colors[idx],
-                height: isActive ? "14px" : "10px",
-              }}
-            >
-              <span
-                className="text-[9px] font-bold"
-                style={{ color: textColors[idx] }}
-              >
-                {cls}
-              </span>
+      <div className="relative flex items-end gap-px">
+        {classes.map((cls, idx) => {
+          const isActive = idx === activeIdx;
+          const isFirst = idx === 0;
+          const isLast = idx === classes.length - 1;
+          return (
+            <div key={cls} className="relative flex-1 flex flex-col items-center gap-1">
+              {isActive && (
+                <div
+                  className="text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded text-white shadow"
+                  style={{ backgroundColor: colors[idx] }}
+                >
+                  {cls}
+                </div>
+              )}
+              {!isActive && <div className="h-5" />}
+              <div
+                className={`w-full ${isFirst ? "rounded-l-sm" : ""} ${isLast ? "rounded-r-sm" : ""} ${isActive ? "opacity-100" : "opacity-30"}`}
+                style={{ backgroundColor: colors[idx], height: isActive ? "12px" : "9px" }}
+              />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
