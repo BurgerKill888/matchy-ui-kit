@@ -1,7 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, FileText, Download, MapPin, Euro, Ruler, Zap, ArrowRight, Building2, CheckCircle } from "lucide-react";
+import { FolderOpen, FileText, Download, MapPin, Euro, Ruler, Zap, ArrowRight, Building2, CheckCircle, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -23,7 +23,6 @@ const mockGrantedDataRooms = [
     price: "2 800 000 €",
     location: "Paris 8e",
     dpe: "B",
-    compatibility: 92,
     grantedAt: "Il y a 2 jours",
     docCount: 5,
     documents: [
@@ -43,7 +42,6 @@ const mockGrantedDataRooms = [
     price: "3 500 000 €",
     location: "Lyon 6e",
     dpe: "C",
-    compatibility: 85,
     grantedAt: "Il y a 5 jours",
     docCount: 3,
     documents: [
@@ -137,12 +135,11 @@ export default function AcquereurDataRoom() {
                       <CheckCircle size={10} /> Accès accordé
                     </Badge>
                     <span className="text-[11px] text-muted-foreground">{room.grantedAt}</span>
-                    <span className="text-xs font-bold text-primary">{room.compatibility}% compatible</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <button
                     onClick={() => setExpanded(expanded === room.id ? null : room.id)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
@@ -151,11 +148,21 @@ export default function AcquereurDataRoom() {
                     {room.docCount} document{room.docCount > 1 ? "s" : ""} disponible{room.docCount > 1 ? "s" : ""}
                     <ArrowRight size={12} className={`transition-transform duration-200 ${expanded === room.id ? "rotate-90" : ""}`} />
                   </button>
-                  <Link to={`/listings/${room.id}`}>
-                    <Button size="sm" variant="outline" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
-                      Voir l'annonce
+
+                  <div className="flex items-center gap-2">
+                    <Link to={`/listings/${room.id}`}>
+                      <Button size="sm" variant="outline" className="text-xs h-7 gap-1 transition-transform duration-200 hover:scale-[1.02]">
+                        <ExternalLink size={11} /> Voir l'annonce
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      className="text-xs h-7 gap-1 glow-gold transition-transform duration-200 hover:scale-[1.02]"
+                      onClick={() => setExpanded(expanded === room.id ? null : room.id)}
+                    >
+                      <FolderOpen size={11} /> Voir les documents
                     </Button>
-                  </Link>
+                  </div>
                 </div>
 
                 {/* Expanded documents */}
