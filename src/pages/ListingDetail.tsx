@@ -61,6 +61,7 @@ const mockListing = {
   surface: "350m²",
   price: "2 800 000 €",
   dpe: "B",
+  ges: "E",
   photos: 4,
   description: `Magnifique plateau de bureaux situé au cœur du 8ème arrondissement de Paris. 
 Idéalement placé à proximité des Champs-Élysées, ce bien offre une surface de 350m² 
@@ -88,6 +89,68 @@ répartis sur un seul niveau avec vue dégagée.`,
     { id: 3, author: "Cabinet Duval & Associés", rating: 4, date: "Juillet 2025", comment: "Bien conforme à la description. Quelques délais administratifs mais vendeur très disponible." },
   ],
 };
+
+function HorizontalBar({ classes, colors, active, label }: { classes: string[]; colors: string[]; active: string | null; label: string }) {
+  if (!active) return null;
+  const activeIdx = classes.indexOf(active);
+  return (
+    <div className="flex-1 min-w-0">
+      <p className="text-xs font-semibold text-foreground mb-2">{label}</p>
+      <div className="flex items-end gap-0.5">
+        {classes.map((cls, idx) => {
+          const isActive = idx === activeIdx;
+          return (
+            <div key={cls} className="relative flex-1 flex flex-col items-center gap-1">
+              {isActive ? (
+                <div
+                  className="text-[11px] font-bold w-6 h-6 flex items-center justify-center rounded text-white shadow-md"
+                  style={{ backgroundColor: colors[idx] }}
+                >
+                  {cls}
+                </div>
+              ) : (
+                <div className="h-6" />
+              )}
+              <div
+                className={`w-full rounded-sm transition-all ${isActive ? "opacity-100" : "opacity-25"}`}
+                style={{ backgroundColor: colors[idx], height: isActive ? "14px" : "10px" }}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function EnergyDiagnostic({ dpe, ges }: { dpe: string | null; ges: string | null }) {
+  if (!dpe && !ges) return null;
+  const dpeClasses = ["A", "B", "C", "D", "E", "F", "G"];
+  const dpeColors = ["#00A550", "#51B848", "#BAD429", "#FFF100", "#F5A623", "#F26423", "#E31837"];
+  const gesClasses = ["A", "B", "C", "D", "E", "F", "G"];
+  const gesColors = ["#E8D5F0", "#D4B8E8", "#BE9ADE", "#A87CD4", "#8B5EC8", "#6E40BC", "#4B2499"];
+  return (
+    <div className="glass-card rounded-xl p-5 mb-6">
+      <h3 className="font-display font-semibold mb-4 flex items-center gap-2">
+        <Zap size={16} className="text-primary" /> Performance énergétique
+      </h3>
+      <div className="flex gap-6 flex-wrap">
+        <HorizontalBar
+          classes={dpeClasses}
+          colors={dpeColors}
+          active={dpe}
+          label="Diagnostic de performance énergétique (DPE)"
+        />
+        <HorizontalBar
+          classes={gesClasses}
+          colors={gesColors}
+          active={ges}
+          label="Indice d'émission de gaz à effet de serre (GES)"
+        />
+      </div>
+    </div>
+  );
+}
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -159,6 +222,9 @@ export default function ListingDetail() {
                 </li>
               ))}
             </ul>
+
+            {/* DPE + GES */}
+            <EnergyDiagnostic dpe={listing.dpe} ges={listing.ges} />
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3">
