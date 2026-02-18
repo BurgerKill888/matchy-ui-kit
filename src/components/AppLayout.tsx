@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Building2, LayoutDashboard, FileText, Search, MessageSquare,
-  Settings, LogOut, Menu, X, Heart, Compass, BookOpen, FolderOpen
+  Settings, LogOut, Menu, X, Heart, Compass, BookOpen, FolderOpen, Crown
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ const acquereurNav: NavItem[] = [
   { label: "Mes matches", icon: Heart, href: "/matches" },
   { label: "Mes fiches de critères", icon: FileText, href: "/criteria" },
   { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
-  { label: "Catalogue", icon: BookOpen, href: "/catalog" },
+  { label: "Catalogue", icon: Crown, href: "/catalog", accent: true },
   { label: "Mes Data Rooms", icon: FolderOpen, href: "/acquereur-dataroom" },
   { label: "Paramètres", icon: Settings, href: "/settings" },
 ];

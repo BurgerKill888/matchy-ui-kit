@@ -1,12 +1,11 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, Search, MapPin, Euro, Ruler, Zap, Edit } from "lucide-react";
+import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
-import { Input } from "@/components/ui/input";
 
 const dpeColors: Record<string, string> = {
   A: "#00A550",
@@ -82,7 +81,6 @@ function DpeBadge({ label }: { label: string }) {
 }
 
 export default function CriteriaPage() {
-  const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("Tous");
   const [statusFilter, setStatusFilter] = useState("Tous");
 
@@ -90,10 +88,9 @@ export default function CriteriaPage() {
   const statuses = ["Tous", "Active", "Brouillon"];
 
   const filtered = mockCriteria.filter((c) => {
-    const matchSearch = search === "" || c.title.toLowerCase().includes(search.toLowerCase()) || c.location.toLowerCase().includes(search.toLowerCase()) || c.type.toLowerCase().includes(search.toLowerCase());
     const matchType = typeFilter === "Tous" || c.type === typeFilter;
     const matchStatus = statusFilter === "Tous" || (statusFilter === "Active" ? c.status === "active" : c.status === "draft");
-    return matchSearch && matchType && matchStatus;
+    return matchType && matchStatus;
   });
 
   return (
@@ -111,17 +108,8 @@ export default function CriteriaPage() {
           </Link>
         </div>
 
-        {/* Search & Filters */}
+        {/* Filters only — no search bar */}
         <div className="space-y-3 mb-6">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par type, localisation, titre..."
-              className="pl-9 bg-secondary border-border"
-            />
-          </div>
           <div className="flex flex-wrap gap-2">
             {types.map((t) => (
               <button

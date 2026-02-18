@@ -1,12 +1,14 @@
 import AppLayout from "@/components/AppLayout";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MapPin, Euro, Ruler, Search, Zap, Building2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MapPin, Euro, Ruler, Search, Zap, Building2, SlidersHorizontal } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
-import { getTypeColor } from "@/lib/propertyTypes";
+import { getTypeColor, typeColors } from "@/lib/propertyTypes";
 
 const dpeColors: Record<string, string> = {
   A: "#00A550", B: "#51B848", C: "#BAD429", D: "#FFF100",
@@ -24,8 +26,7 @@ const mockCatalog = [
   { id: 8, title: "Ensemble mixte Nantes", type: "Ensemble immobilier mixte", surface: "3 200m²", price: "5 600 000 €", location: "Nantes Centre", owner: "Foncière Atlantique", dpe: "C", compatibility: 90 },
 ];
 
-const typeFilters = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison", "Ensemble immobilier mixte"];
-const budgetFilters = ["Tous", "< 500K", "500K–1M", "1M–5M", "> 5M"];
+const typeList = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison", "Ensemble immobilier mixte"];
 const dpeFilters = ["Tous", "A", "B", "C", "D", "E", "F", "G"];
 
 function DpeBadge({ label }: { label: string }) {
@@ -40,8 +41,7 @@ function DpeBadge({ label }: { label: string }) {
 }
 
 function matchBudget(price: string, filter: string): boolean {
-  const numStr = price.replace(/\s/g, "").replace("€", "").replace(/[^0-9]/g, "");
-  const val = parseInt(numStr);
+  const val = parseInt(price.replace(/\s/g, "").replace(/[^0-9]/g, ""));
   if (filter === "< 500K") return val < 500000;
   if (filter === "500K–1M") return val >= 500000 && val <= 1000000;
   if (filter === "1M–5M") return val > 1000000 && val <= 5000000;
@@ -53,7 +53,9 @@ export default function CatalogPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("Tous");
   const [budgetFilter, setBudgetFilter] = useState("Tous");
+  const [surfaceFilter, setSurfaceFilter] = useState("Tous");
   const [dpeFilter, setDpeFilter] = useState("Tous");
+  const [showFilters, setShowFilters] = useState(true);
 
   const filtered = mockCatalog.filter((item) => {
     const matchSearch = search === "" ||
@@ -75,64 +77,127 @@ export default function CatalogPage() {
           <p className="text-muted-foreground text-sm mt-1">Toutes les opportunités qualifiées du réseau</p>
         </div>
 
-        {/* Search & filters */}
-        <div className="space-y-3 mb-6">
-          <div className="relative">
+        {/* Search bar */}
+        <div className="flex gap-2 mb-4">
+          <div className="relative flex-1">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher par titre, localisation, vendeur..."
+              placeholder="Ville, code postal, type de bien, vendeur..."
               className="pl-9 bg-secondary border-border"
             />
           </div>
-
-          {/* Type filters */}
-          <div className="flex flex-wrap gap-2">
-            {typeFilters.map((f) => (
-              <button
-                key={f}
-                onClick={() => setTypeFilter(f)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${typeFilter === f ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-
-          {/* Budget & DPE filters */}
-          <div className="flex flex-wrap gap-4">
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-muted-foreground self-center">Budget :</span>
-              {budgetFilters.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setBudgetFilter(f)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${budgetFilter === f ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-xs text-muted-foreground self-center flex items-center gap-1"><Zap size={12} /> DPE :</span>
-              {dpeFilters.map((f) => (
-                <button
-                  key={f}
-                  onClick={() => setDpeFilter(f)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${dpeFilter === f
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-                  }`}
-                  style={f !== "Tous" && dpeFilter === f ? {} : {}}
-                >
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">{filtered.length} annonce{filtered.length !== 1 ? "s" : ""} trouvée{filtered.length !== 1 ? "s" : ""}</p>
+          <Button
+            variant="outline"
+            className={`gap-1.5 text-sm ${showFilters ? "border-primary text-primary" : ""}`}
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <SlidersHorizontal size={15} />
+            Filtres
+          </Button>
         </div>
+
+        {/* SeLoger-inspired filter panel */}
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-card rounded-xl p-4 mb-5 space-y-4"
+          >
+            {/* Type de bien */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Type de bien</p>
+              <div className="flex flex-wrap gap-1.5">
+                {typeList.map((t) => {
+                  const color = t === "Tous" ? undefined : typeColors[t];
+                  const isActive = typeFilter === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTypeFilter(t)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${
+                        isActive ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                      }`}
+                    >
+                      {color && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />}
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Budget + Surface + DPE */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Budget</p>
+                <Select value={budgetFilter} onValueChange={setBudgetFilter}>
+                  <SelectTrigger className="h-8 text-xs bg-secondary border-border">
+                    <SelectValue placeholder="Tous les budgets" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tous">Tous les budgets</SelectItem>
+                    <SelectItem value="< 500K">Moins de 500 000 €</SelectItem>
+                    <SelectItem value="500K–1M">500 000 – 1 000 000 €</SelectItem>
+                    <SelectItem value="1M–5M">1 000 000 – 5 000 000 €</SelectItem>
+                    <SelectItem value="> 5M">Plus de 5 000 000 €</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Surface</p>
+                <Select value={surfaceFilter} onValueChange={setSurfaceFilter}>
+                  <SelectTrigger className="h-8 text-xs bg-secondary border-border">
+                    <SelectValue placeholder="Toutes surfaces" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tous">Toutes surfaces</SelectItem>
+                    <SelectItem value="< 100">Moins de 100 m²</SelectItem>
+                    <SelectItem value="100-500">100 – 500 m²</SelectItem>
+                    <SelectItem value="500-2000">500 – 2 000 m²</SelectItem>
+                    <SelectItem value="> 2000">Plus de 2 000 m²</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide flex items-center gap-1">
+                  <Zap size={11} /> DPE
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {dpeFilters.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setDpeFilter(f)}
+                      className={`w-7 h-7 rounded text-[10px] font-bold border transition-all duration-200 ${
+                        dpeFilter === f
+                          ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                          : "border-border opacity-60 hover:opacity-100"
+                      }`}
+                      style={f !== "Tous" ? { backgroundColor: dpeColors[f], color: ["D", "C"].includes(f) ? "black" : "white" } : {}}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <p className="text-xs text-muted-foreground">{filtered.length} annonce{filtered.length !== 1 ? "s" : ""} trouvée{filtered.length !== 1 ? "s" : ""}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-muted-foreground h-7"
+                onClick={() => { setTypeFilter("Tous"); setBudgetFilter("Tous"); setSurfaceFilter("Tous"); setDpeFilter("Tous"); setSearch(""); }}
+              >
+                Réinitialiser
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
         {filtered.length === 0 ? (
           <EmptyState

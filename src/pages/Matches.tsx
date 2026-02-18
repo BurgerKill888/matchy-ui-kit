@@ -115,39 +115,53 @@ export default function Matches() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.08 }}
-                    className="glass-card rounded-xl p-5 flex items-center justify-between hover:border-primary/30 hover:shadow-card transition-all duration-200"
+                    className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className="relative w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <Building2 className="text-primary" size={24} />
-                        {match.status === "new" && (
-                          <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary glow-gold" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-display font-semibold">{match.label}</p>
-                        <p className="text-sm text-muted-foreground">{match.counterpart}</p>
-                        <div className="flex items-center gap-3 mt-1.5">
-                          <span className={`text-xs flex items-center gap-1 font-medium ${timerColor}`}>
-                            {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={10} />}
-                            <Clock size={11} /> {match.timer}
-                          </span>
-                          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
-                          <Badge variant={st.variant} className="text-[10px] h-5">
-                            {st.label}
-                          </Badge>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="relative w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Building2 className="text-primary" size={24} />
+                          {match.status === "new" && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary glow-gold" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-display font-semibold">{match.label}</p>
+                          <p className="text-sm text-muted-foreground">{match.counterpart}</p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <span className={`text-xs flex items-center gap-1 font-medium ${timerColor}`}>
+                              {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={10} />}
+                              <Clock size={11} /> {match.timer}
+                            </span>
+                            <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
+                            <Badge variant={st.variant} className="text-[10px] h-5">
+                              {st.label}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Action buttons — for acquéreur, show both "Converser" + "Voir l'annonce" */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {isAcquereur && (
+                          <Link to={`/listings/${match.id}`}>
+                            <Button size="sm" variant="outline" className="text-xs transition-transform duration-200 hover:scale-[1.02]">
+                              Voir l'annonce
+                            </Button>
+                          </Link>
+                        )}
+                        <Link to="/messaging">
+                          <Button
+                            size="sm"
+                            className={`transition-transform duration-200 hover:scale-[1.02] ${match.status === "new" ? "glow-gold" : ""}`}
+                            variant={match.status === "new" ? "default" : "outline"}
+                          >
+                            <MessageSquare size={13} className="mr-1" />
+                            Converser
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
-                    <Link to="/messaging">
-                      <Button
-                        size="sm"
-                        className={`transition-transform duration-200 hover:scale-[1.02] ${match.status === "new" ? "glow-gold" : ""}`}
-                        variant={match.status === "new" ? "default" : "outline"}
-                      >
-                        {st.ctaLabel} <st.ctaIcon size={14} className="ml-1" />
-                      </Button>
-                    </Link>
                   </motion.div>
                 );
               })}
