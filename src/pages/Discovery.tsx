@@ -267,8 +267,8 @@ export default function Discovery() {
     setCards((prev) => [...prev, last]);
   };
 
-  // Visible: only top 2 cards, rendered bottom-to-top
-  const visibleCards = cards.slice(-2);
+  // Only show the top card to avoid overlap/bleed-through
+  const topCard = cards.length > 0 ? cards[cards.length - 1] : null;
 
   return (
     <AppLayout>
@@ -317,19 +317,16 @@ export default function Discovery() {
               ctaHref="#"
             />
           ) : (
-            <AnimatePresence mode="popLayout">
-              {visibleCards.map((card, i) => {
-                const isTop = i === visibleCards.length - 1;
-                return (
-                  <SwipeCard
-                    key={card.id}
-                    card={card}
-                    isTop={isTop}
-                    onSwipe={handleSwipe}
-                    onScoreClick={() => { setScoreCard(card); setScoreModal(true); }}
-                  />
-                );
-              })}
+            <AnimatePresence mode="wait">
+              {topCard && (
+                <SwipeCard
+                  key={topCard.id}
+                  card={topCard}
+                  isTop={true}
+                  onSwipe={handleSwipe}
+                  onScoreClick={() => { setScoreCard(topCard); setScoreModal(true); }}
+                />
+              )}
             </AnimatePresence>
           )}
         </div>
