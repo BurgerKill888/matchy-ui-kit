@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus, Clock, Heart, FileText, Eye, ArrowRight, Search, MessageSquare,
-  TrendingUp, Compass, TrendingDown, AlertTriangle, Target, CheckCircle2,
-  BarChart3
+  TrendingUp, Compass, TrendingDown, AlertTriangle, BarChart3
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -21,20 +20,11 @@ const vendeurMatches = [
 const vendeurAlerts = [
   { id: 1, icon: AlertTriangle, text: "Immeuble de rapport Lille — Brouillon depuis 5 jours", cta: "Finaliser", href: "/listings/3", color: "text-warning" },
   { id: 2, icon: TrendingDown, text: "Local commercial Marseille — Aucun match depuis 7 jours", cta: "Ajuster", href: "/listings/2", color: "text-destructive" },
-  { id: 3, icon: Target, text: "Terrain Bordeaux — 5 matches générés, 0 conversation", cta: "Consulter", href: "/matches", color: "text-info" },
-  { id: 4, icon: CheckCircle2, text: "Bureau Paris 8e — Performance optimale, 3 matches actifs", cta: "Voir", href: "/listings/1", color: "text-success" },
 ];
 
 const acquereurMatches = [
   { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new" as const },
   { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "0j 06h", timerHours: 6, compatibility: 85, status: "in_conversation" as const },
-];
-
-const acquereurAlerts = [
-  { id: 1, icon: Compass, text: "5 nouvelles opportunités correspondent à votre fiche Bureaux IDF", cta: "Découvrir", href: "/discovery", color: "text-primary" },
-  { id: 2, icon: AlertTriangle, text: "Fiche Entrepôts Lyon — Aucun résultat depuis 14 jours", cta: "Élargir", href: "/criteria/1", color: "text-warning" },
-  { id: 3, icon: MessageSquare, text: "Match Immeuble Lyon 6e — En conversation depuis 3j, pas de réponse", cta: "Relancer", href: "/messaging", color: "text-info" },
-  { id: 4, icon: CheckCircle2, text: "Fiche Terrains Bordeaux — 3 matches actifs, bonne couverture", cta: "Voir", href: "/criteria/2", color: "text-success" },
 ];
 
 // --- KPI Card ---
@@ -186,13 +176,6 @@ function VendeurDashboard() {
         {vendeurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)}
       </div>
 
-      {/* Actions recommandées */}
-      <div className="space-y-3">
-        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-          <Target size={18} className="text-primary" /> Actions recommandées
-        </h2>
-        {vendeurAlerts.map((a, i) => <AlertCard key={a.id} alert={a} index={i} />)}
-      </div>
     </div>
   );
 }
@@ -258,19 +241,11 @@ function AcquereurDashboard() {
         </h2>
         {acquereurMatches.map((m, i) => <MatchCard key={m.id} match={m} index={i} />)}
       </div>
-
-      {/* Actions recommandées */}
-      <div className="space-y-3">
-        <h2 className="font-display text-lg font-semibold flex items-center gap-2">
-          <Target size={18} className="text-primary" /> Actions recommandées
-        </h2>
-        {acquereurAlerts.map((a, i) => <AlertCard key={a.id} alert={a} index={i} />)}
-      </div>
     </div>
   );
 }
 
-// --- Main Dashboard ---
+
 export default function Dashboard() {
   const { isVendeur } = useUserSpace();
   return (

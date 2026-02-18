@@ -8,6 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import Discovery from "./pages/Discovery";
 import Matches from "./pages/Matches";
 import Listings from "./pages/Listings";
+import CriteriaPage from "./pages/Criteria";
+import CatalogPage from "./pages/Catalog";
+import AcquereurDataRoom from "./pages/AcquereurDataRoom";
 import ListingDetail from "./pages/ListingDetail";
 import CreateForm from "./pages/CreateForm";
 import DataRoom from "./pages/DataRoom";
@@ -34,9 +37,10 @@ const App = () => (
             <Route path="/listings" element={<Listings mode="listings" />} />
             <Route path="/listings/create" element={<CreateForm mode="listing" />} />
             <Route path="/listings/:id" element={<ListingDetail />} />
-            <Route path="/catalog" element={<Listings mode="catalog" />} />
-            <Route path="/criteria" element={<Listings mode="criteria" />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/criteria" element={<CriteriaPage />} />
             <Route path="/criteria/create" element={<CreateForm mode="criteria" />} />
+            <Route path="/acquereur-dataroom" element={<AcquereurDataRoom />} />
             <Route path="/dataroom" element={<DataRoom />} />
             <Route path="/messaging" element={<Messaging />} />
             <Route path="/settings" element={<Settings />} />
