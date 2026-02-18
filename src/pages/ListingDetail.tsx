@@ -1,9 +1,49 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, MapPin, Ruler, Euro, Building2, Eye, Sparkles, FolderLock, MessageSquare, Star, CheckCircle, ExternalLink, Zap } from "lucide-react";
+import { ArrowLeft, MapPin, Ruler, Euro, Building2, Eye, Sparkles, FolderLock, MessageSquare, Star, CheckCircle, ExternalLink, Zap, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { useState } from "react";
 import { getTypeColor } from "@/lib/propertyTypes";
+
+function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
+  const [current, setCurrent] = useState(0);
+  return (
+    <div className="relative h-52 md:h-72 bg-gradient-to-br from-secondary to-muted flex items-center justify-center overflow-hidden group">
+      <Building2 className="text-muted-foreground/10" size={80} />
+      {/* Badge photos */}
+      <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-black/60 rounded-full px-2.5 py-1">
+        <Images size={12} className="text-white" />
+        <span className="text-xs text-white font-medium">{photos}</span>
+      </div>
+      {/* Arrows */}
+      <button
+        onClick={() => setCurrent((p) => (p - 1 + photos) % photos)}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+      >
+        <ChevronLeft size={18} className="text-white" />
+      </button>
+      <button
+        onClick={() => setCurrent((p) => (p + 1) % photos)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+      >
+        <ChevronRight size={18} className="text-white" />
+      </button>
+      {/* Dots */}
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+        {Array.from({ length: Math.min(photos, 5) }).map((_, i) => (
+          <button key={i} onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/40"}`}
+          />
+        ))}
+      </div>
+      {/* Type badge */}
+      <div className="absolute top-4 left-4">
+        <Badge className="text-xs">{type}</Badge>
+      </div>
+    </div>
+  );
+}
 
 const dpeColors: Record<string, string> = {
   A: "#00A550", B: "#51B848", C: "#BAD429", D: "#FFF100",
@@ -21,6 +61,7 @@ const mockListing = {
   surface: "350m²",
   price: "2 800 000 €",
   dpe: "B",
+  photos: 4,
   description: `Magnifique plateau de bureaux situé au cœur du 8ème arrondissement de Paris. 
 Idéalement placé à proximité des Champs-Élysées, ce bien offre une surface de 350m² 
 répartis sur un seul niveau avec vue dégagée.`,
@@ -78,13 +119,8 @@ export default function ListingDetail() {
           {/* Type color band */}
           <div className="h-1" style={{ backgroundColor: getTypeColor(listing.type) }} />
 
-          {/* Image */}
-          <div className="h-52 md:h-72 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
-            <Building2 className="text-muted-foreground/10" size={80} />
-            <div className="absolute top-4 left-4">
-              <Badge className="text-xs">{listing.type}</Badge>
-            </div>
-          </div>
+          {/* Photo carousel */}
+          <PhotoCarousel photos={listing.photos} type={listing.type} />
 
           <div className="p-6 md:p-8">
             {/* Status bar */}
