@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, MapPin, Ruler, Euro, Building2, Eye, Sparkles, FolderLock, MessageSquare, Star, CheckCircle, ExternalLink, Zap, ChevronLeft, ChevronRight, Images } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useState } from "react";
+import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { getTypeColor } from "@/lib/propertyTypes";
 
 function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
@@ -168,6 +169,7 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function ListingDetail() {
   const { id } = useParams();
+  const { isAcquereur } = useUserSpace();
   const listing = mockListing; // In real app, fetch by id
 
   return (
@@ -233,11 +235,13 @@ export default function ListingDetail() {
                   <FolderLock size={16} className="mr-2" /> Accéder à la Data Room
                 </Button>
               </Link>
-              <Link to="/messaging">
-                <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
-                  <MessageSquare size={16} className="mr-2" /> Contacter le vendeur
-                </Button>
-              </Link>
+              {isAcquereur && (
+                <Link to="/messaging">
+                  <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
+                    <MessageSquare size={16} className="mr-2" /> Contacter le vendeur
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         </div>
