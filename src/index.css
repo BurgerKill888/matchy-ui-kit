@@ -71,6 +71,41 @@
     --shadow-card: 0 8px 32px -8px hsl(222 30% 4% / 0.5);
     --shadow-elevated: 0 16px 48px -12px hsl(222 30% 4% / 0.6);
   }
+
+  /* Acquéreur space — sapphire/blue accent theme */
+  [data-space="acquereur"] {
+    --primary: 210 80% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 210 80% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --ring: 210 80% 52%;
+
+    --gold: 210 80% 52%;
+    --gold-light: 210 85% 68%;
+    --gold-dark: 210 70% 38%;
+
+    --sidebar-primary: 210 80% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-ring: 210 80% 52%;
+
+    --gradient-gold: linear-gradient(135deg, hsl(210 80% 52%), hsl(220 85% 65%));
+    --shadow-gold: 0 4px 20px -4px hsl(210 80% 52% / 0.30);
+
+    /* Keep background and card slightly cooler/deeper */
+    --background: 220 32% 7%;
+    --card: 220 28% 11%;
+    --secondary: 220 22% 17%;
+    --muted: 220 22% 15%;
+    --border: 220 22% 19%;
+    --input: 220 22% 19%;
+    --glass: 220 28% 11%;
+    --glass-border: 220 22% 21%;
+    --sidebar-background: 220 30% 9%;
+    --sidebar-border: 220 22% 17%;
+    --sidebar-accent: 220 22% 15%;
+  }
 }
 
 @layer base {

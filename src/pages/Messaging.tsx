@@ -5,6 +5,7 @@ import { Clock, Send, User, Euro, Ruler, ExternalLink, FolderOpen, MessageSquare
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
+import { Link } from "react-router-dom";
 
 const mockConversations = [
   { id: 1, name: "SCI Patrimoine", lastMessage: "Quand pouvons-nous visiter ?", timer: "2j 14h", unread: true, property: "Bureau 350m² Paris 8e", surface: "350m²", price: "2 800 000 €", compatibility: 92, dataRoomAccess: false },
@@ -95,9 +96,11 @@ export default function Messaging() {
                 {/* Acquéreur: Data Room button */}
                 {!isVendeur && (
                   conv.dataRoomAccess ? (
-                    <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
-                      <FolderOpen size={12} className="mr-1" /> Data Room
-                    </Button>
+                    <Link to="/dataroom">
+                      <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
+                        <FolderOpen size={12} className="mr-1" /> Data Room
+                      </Button>
+                    </Link>
                   ) : (
                     <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
                       <Lock size={12} className="mr-1" /> Demander accès Data Room
