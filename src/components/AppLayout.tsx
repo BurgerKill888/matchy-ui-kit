@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, FileText, Search, MessageSquare,
-  Settings, LogOut, Menu, X, Heart, Compass, BookOpen, FolderOpen, Crown } from
+  LayoutDashboard, FileText, MessageSquare,
+  Settings, LogOut, Menu, X, Heart, Compass, FolderOpen, Crown, LayoutGrid } from
 "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationPanel from "@/components/NotificationPanel";
 
-type NavItem = {label: string;icon: React.ElementType;href: string;accent?: boolean;};
+type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean;};
 
 const vendeurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
@@ -21,11 +21,11 @@ const vendeurNav: NavItem[] = [
 
 const acquereurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
-{ label: "Découvrir", icon: Compass, href: "/discovery", accent: true },
+{ label: "Découvrir", icon: Compass, href: "/discovery" },
 { label: "Mes matches", icon: Heart, href: "/matches" },
 { label: "Mes fiches de critères", icon: FileText, href: "/criteria" },
 { label: "Messagerie", icon: MessageSquare, href: "/messaging" },
-{ label: "Catalogue", icon: Crown, href: "/catalog", accent: true },
+{ label: "Catalogue", icon: LayoutGrid, href: "/catalog", vip: true },
 { label: "Mes Data Rooms", icon: FolderOpen, href: "/acquereur-dataroom" },
 { label: "Paramètres", icon: Settings, href: "/settings" }];
 
@@ -117,16 +117,18 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
                   active ?
                   "bg-primary/10 text-primary" :
-                  item.accent ?
-                  "text-primary/80 hover:text-primary hover:bg-primary/5" :
+                  item.vip ?
+                  "text-muted-foreground hover:text-foreground hover:bg-secondary" :
                   "text-muted-foreground hover:text-foreground hover:bg-secondary"}`
                   }>
 
                   <item.icon size={18} />
-                  {item.label}
-                  {item.accent && !active &&
-                  <span className="ml-auto w-2 h-2 rounded-full bg-primary animate-pulse-gold" />
-                  }
+                  <span>{item.label}</span>
+                  {item.vip && (
+                    <span className="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-primary">
+                      <Crown size={11} />
+                    </span>
+                  )}
                 </Link>);
 
             })}
