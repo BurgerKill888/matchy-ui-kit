@@ -155,7 +155,7 @@ export default function AcquereurDataRoom() {
                         <ExternalLink size={11} /> Voir l'annonce
                       </Button>
                     </Link>
-                    <Link to={`/dataroom/${room.id}`}>
+                    <Link to="/dataroom">
                       <Button
                         size="sm"
                         className="text-xs h-7 gap-1 glow-gold transition-transform duration-200 hover:scale-[1.02]"
