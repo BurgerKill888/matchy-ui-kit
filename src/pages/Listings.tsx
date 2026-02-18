@@ -51,19 +51,17 @@ function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
 }
 
 interface ListingsPageProps {
-  mode?: "listings" | "catalog" | "criteria";
+  mode?: "listings" | "catalog";
 }
 
 export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
   const titles: Record<string, string> = {
     listings: "Mes annonces",
     catalog: "Catalogue d'annonces",
-    criteria: "Mes fiches de critères",
   };
   const baselines: Record<string, string> = {
     listings: "Gérez vos biens et suivez leur performance",
     catalog: "Toutes les opportunités qualifiées du réseau",
-    criteria: "Vos critères de recherche actifs sur le réseau",
   };
 
   return (
@@ -75,9 +73,9 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
             <p className="text-muted-foreground text-sm mt-1">{baselines[mode]}</p>
           </div>
           {mode !== "catalog" && (
-            <Link to={mode === "criteria" ? "/criteria/create" : "/listings/create"}>
+            <Link to="/listings/create">
               <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
-                <Plus size={16} className="mr-2" /> {mode === "criteria" ? "Nouvelle fiche" : "Nouvelle annonce"}
+                <Plus size={16} className="mr-2" /> Nouvelle annonce
               </Button>
             </Link>
           )}
@@ -86,12 +84,10 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
         {mockListings.length === 0 ? (
           <EmptyState
             icon={Plus}
-            title={mode === "criteria" ? "Aucune fiche de recherche" : "Aucune annonce"}
-            subtitle={mode === "criteria"
-              ? "Créez votre première fiche de recherche pour découvrir des opportunités compatibles."
-              : "Publiez votre première annonce pour commencer à recevoir des matches qualifiés."}
-            ctaLabel={mode === "criteria" ? "+ Nouvelle fiche" : "+ Publier une annonce"}
-            ctaHref={mode === "criteria" ? "/criteria/create" : "/listings/create"}
+            title="Aucune annonce"
+            subtitle="Publiez votre première annonce pour commencer à recevoir des matches qualifiés."
+            ctaLabel="+ Publier une annonce"
+            ctaHref="/listings/create"
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
