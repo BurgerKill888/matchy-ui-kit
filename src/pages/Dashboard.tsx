@@ -2,8 +2,8 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, Clock, Heart, FileText, Eye, ArrowRight, Search, MessageSquare,
-  TrendingUp, Compass, TrendingDown, AlertTriangle, BarChart3
+  Plus, Clock, Heart, FileText, Eye, ArrowRight, Search,
+  Compass, AlertTriangle
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -19,7 +19,7 @@ const vendeurMatches = [
 
 const vendeurAlerts = [
   { id: 1, icon: AlertTriangle, text: "Immeuble de rapport Lille — Brouillon depuis 5 jours", cta: "Finaliser", href: "/listings/3", color: "text-warning" },
-  { id: 2, icon: TrendingDown, text: "Local commercial Marseille — Aucun match depuis 7 jours", cta: "Ajuster", href: "/listings/2", color: "text-destructive" },
+  { id: 2, icon: AlertTriangle, text: "Local commercial Marseille — Aucun match depuis 7 jours", cta: "Ajuster", href: "/listings/2", color: "text-destructive" },
 ];
 
 const acquereurMatches = [
@@ -28,8 +28,8 @@ const acquereurMatches = [
 ];
 
 // --- KPI Card ---
-function KpiCard({ label, value, icon: Icon, color, trend, trendValue, delay }: {
-  label: string; value: string; icon: React.ElementType; color: string; trend: "up" | "down"; trendValue: string; delay: number;
+function KpiCard({ label, value, icon: Icon, color, delay }: {
+  label: string; value: string; icon: React.ElementType; color: string; delay: number;
 }) {
   return (
     <motion.div
@@ -43,10 +43,6 @@ function KpiCard({ label, value, icon: Icon, color, trend, trendValue, delay }: 
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <p className="font-display text-2xl font-bold">{value}</p>
-      <div className={`flex items-center gap-1 mt-1 text-xs ${trend === "up" ? "text-success" : "text-destructive"}`}>
-        {trend === "up" ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-        <span>{trendValue} cette semaine</span>
-      </div>
     </motion.div>
   );
 }
@@ -83,7 +79,6 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
               {match.timerHours < 24 && <AlertTriangle size={10} />}
               <Clock size={10} /> {match.timer}
             </span>
-            <span className="text-xs font-semibold text-primary">{match.compatibility}%</span>
             {match.status === "in_conversation" && (
               <Badge variant="secondary" className="text-[10px] h-5">En conversation</Badge>
             )}
@@ -124,10 +119,9 @@ function AlertCard({ alert, index }: { alert: typeof vendeurAlerts[0]; index: nu
 // --- Dashboard Vendeur ---
 function VendeurDashboard() {
   const kpis = [
-    { label: "Annonces actives", value: "2", icon: FileText, color: "text-primary", trend: "up" as const, trendValue: "↑ 1" },
-    { label: "Vues reçues", value: "54", icon: Eye, color: "text-info", trend: "up" as const, trendValue: "↑ 12%" },
-    { label: "Matches en cours", value: "3", icon: Heart, color: "text-primary", trend: "up" as const, trendValue: "↑ 2" },
-    { label: "Taux de match", value: "28%", icon: BarChart3, color: "text-success", trend: "up" as const, trendValue: "↑ 3%" },
+    { label: "Annonces actives", value: "2", icon: FileText, color: "text-primary" },
+    { label: "Vues reçues", value: "54", icon: Eye, color: "text-info" },
+    { label: "Matches en cours", value: "3", icon: Heart, color: "text-primary" },
   ];
 
   const hasData = true; // toggle for empty state
@@ -183,10 +177,9 @@ function VendeurDashboard() {
 // --- Dashboard Acquéreur ---
 function AcquereurDashboard() {
   const kpis = [
-    { label: "Fiches actives", value: "2", icon: FileText, color: "text-primary", trend: "up" as const, trendValue: "↑ 1" },
-    { label: "Opportunités découvertes", value: "18", icon: Search, color: "text-info", trend: "up" as const, trendValue: "↑ 5" },
-    { label: "Matches en cours", value: "2", icon: Heart, color: "text-primary", trend: "down" as const, trendValue: "↓ 1" },
-    { label: "Taux de match", value: "35%", icon: BarChart3, color: "text-success", trend: "up" as const, trendValue: "↑ 8%" },
+    { label: "Fiches actives", value: "2", icon: FileText, color: "text-primary" },
+    { label: "Opportunités découvertes", value: "18", icon: Search, color: "text-info" },
+    { label: "Matches en cours", value: "2", icon: Heart, color: "text-primary" },
   ];
 
   const hasData = true;
