@@ -31,6 +31,9 @@ const mockListings = [
   { id: 3, title: "Immeuble de rapport Lille", type: "Immeuble", surface: "800m²", price: "1 200 000 €", location: "Lille Centre", status: "draft", views: 0, matches: 0, viewsTrend: 0, trendDir: "up" as const, priceTag: "offmarket" as const, photos: 5, dpe: "E" },
   { id: 4, title: "Terrain constructible Bordeaux", type: "Terrain à potentiel", surface: "2 000m²", price: "750 000 €", location: "Bordeaux Métropole", status: "active", views: 38, matches: 5, viewsTrend: 15, trendDir: "up" as const, priceTag: "negotiable" as const, photos: 2, dpe: null },
   { id: 5, title: "Plateau de bureau Lyon", type: "Bureaux", surface: "500m²", price: "1 800 000 €", location: "Lyon Part-Dieu", status: "active", views: 18, matches: 2, viewsTrend: 3, trendDir: "up" as const, priceTag: "firm" as const, photos: 6, dpe: "A" },
+  { id: 6, title: "Entrepôt logistique Roissy", type: "Entrepôt / activité", surface: "5 000m²", price: "4 200 000 €", location: "Roissy CDG", status: "active", views: 29, matches: 4, viewsTrend: 6, trendDir: "up" as const, priceTag: "negotiable" as const, photos: 4, dpe: "B" },
+  { id: 7, title: "Maison de maître Versailles", type: "Maison", surface: "280m²", price: "2 100 000 €", location: "Versailles", status: "active", views: 11, matches: 1, viewsTrend: 2, trendDir: "up" as const, priceTag: "firm" as const, photos: 7, dpe: "F" },
+  { id: 8, title: "Ensemble mixte Nantes", type: "Ensemble immobilier mixte", surface: "3 200m²", price: "5 600 000 €", location: "Nantes Centre", status: "draft", views: 0, matches: 0, viewsTrend: 0, trendDir: "up" as const, priceTag: "offmarket" as const, photos: 5, dpe: "C" },
 ];
 
 const priceTagConfig = {
