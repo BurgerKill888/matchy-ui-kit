@@ -143,13 +143,11 @@ export default function Matches() {
 
                       {/* Action buttons — for acquéreur, show both "Converser" + "Voir l'annonce" */}
                       <div className="flex items-center gap-2 shrink-0">
-                        {isAcquereur && (
-                          <Link to={`/listings/${match.id}`}>
-                            <Button size="sm" variant="outline" className="text-xs transition-transform duration-200 hover:scale-[1.02]">
-                              Voir l'annonce
-                            </Button>
-                          </Link>
-                        )}
+                        <Link to={`/listings/${match.id}`}>
+                          <Button size="sm" variant="outline" className="text-xs transition-transform duration-200 hover:scale-[1.02]">
+                            Voir l'annonce
+                          </Button>
+                        </Link>
                         <Link to="/messaging">
                           <Button
                             size="sm"
