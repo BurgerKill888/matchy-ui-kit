@@ -175,10 +175,10 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
 
                     <div className="p-4">
                       <div className="flex items-center justify-between mb-2">
-                        <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs">
-                          {item.status === "active" ? "Active" : "Brouillon"}
-                        </Badge>
                         <div className="flex items-center gap-2">
+                          <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs">
+                            {item.status === "active" ? "Active" : "Brouillon"}
+                          </Badge>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
                             <Eye size={12} /> {item.views}
                           </span>
@@ -196,6 +196,19 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                             <Pencil size={11} className="text-muted-foreground hover:text-foreground" />
                           </button>
                         </div>
+
+                        {/* Matches — prominent right badge */}
+                        {item.matches > 0 ? (
+                          <div className="flex items-center gap-1.5 bg-primary text-primary-foreground px-2.5 py-1 rounded-full shadow-sm">
+                            <Heart size={11} className="fill-current" />
+                            <span className="text-xs font-bold">{item.matches} match{item.matches > 1 ? "es" : ""}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-muted-foreground/40 border border-border/30 px-2 py-0.5 rounded-full">
+                            <Heart size={11} />
+                            <span className="text-[10px]">0</span>
+                          </div>
+                        )}
                       </div>
 
                       <h3 className="font-semibold text-sm mb-2 group-hover:text-primary transition-colors">{item.title}</h3>
@@ -220,12 +233,6 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
 
                       {/* DPE compact badge */}
                       <DpeBadge dpe={item.dpe} />
-
-                      {item.matches > 0 && (
-                        <div className="mt-2 flex items-center gap-1 text-xs text-primary">
-                          <Heart size={12} /> {item.matches} match(es)
-                        </div>
-                      )}
                     </div>
                   </div>
                 </Link>
