@@ -20,11 +20,6 @@ const typeList = [
   "Ensemble immobilier mixte",
 ];
 
-const dpeColors: Record<string, string> = {
-  A: "#00A550", B: "#51B848", C: "#BAD429", D: "#FFF100",
-  E: "#F5A623", F: "#F26423", G: "#E31837",
-};
-
 const mockListings = [
   { id: 1, title: "Bureau 350m² Paris 8e", type: "Bureaux", surface: "350m²", price: "2 800 000 €", location: "Paris 8e", status: "active", views: 24, matches: 3, viewsTrend: 8, trendDir: "up" as const, priceTag: "firm" as const, photos: 4, dpe: "B" },
   { id: 2, title: "Local commercial Marseille", type: "Local commercial", surface: "120m²", price: "450 000 €", location: "Marseille 6e", status: "active", views: 12, matches: 1, viewsTrend: 2, trendDir: "down" as const, priceTag: "negotiable" as const, photos: 3, dpe: "D" },
@@ -42,43 +37,24 @@ const priceTagConfig = {
   offmarket: { label: "Off-market", bg: "bg-[#1A1A2E]", text: "text-[#D4A843]", border: "border border-[#D4A843]" },
 };
 
-// DPE bar SeLoger-style
-function DpeBar({ dpe }: { dpe: string | null }) {
-  if (!dpe) return null;
-  const classes = ["A", "B", "C", "D", "E", "F", "G"];
-  const colors = ["#00A550", "#51B848", "#BAD429", "#FFF100", "#F5A623", "#F26423", "#E31837"];
-  const activeIdx = classes.indexOf(dpe);
+const dpeColors: Record<string, string> = {
+  A: "#00A550", B: "#51B848", C: "#BAD429", D: "#F5C518",
+  E: "#F5A623", F: "#F26423", G: "#E31837",
+};
 
+function DpeBadge({ dpe }: { dpe: string | null }) {
+  if (!dpe) return null;
+  const color = dpeColors[dpe] ?? "#5A6B7A";
   return (
-    <div className="mt-3">
-      <div className="flex items-center gap-1 mb-3">
-        <Zap size={11} className="text-muted-foreground" />
-        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Performance énergétique (DPE)</span>
-      </div>
-      <div className="relative flex items-end gap-px">
-        {classes.map((cls, idx) => {
-          const isActive = idx === activeIdx;
-          const isFirst = idx === 0;
-          const isLast = idx === classes.length - 1;
-          return (
-            <div key={cls} className="relative flex-1 flex flex-col items-center gap-1">
-              {isActive && (
-                <div
-                  className="text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded text-white shadow"
-                  style={{ backgroundColor: colors[idx] }}
-                >
-                  {cls}
-                </div>
-              )}
-              {!isActive && <div className="h-5" />}
-              <div
-                className={`w-full ${isFirst ? "rounded-l-sm" : ""} ${isLast ? "rounded-r-sm" : ""} ${isActive ? "opacity-100" : "opacity-30"}`}
-                style={{ backgroundColor: colors[idx], height: isActive ? "12px" : "9px" }}
-              />
-            </div>
-          );
-        })}
-      </div>
+    <div className="mt-2 flex items-center gap-1.5">
+      <Zap size={11} className="text-muted-foreground" />
+      <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">DPE</span>
+      <span
+        className="w-5 h-5 flex items-center justify-center rounded text-[10px] font-bold text-white shadow-sm"
+        style={{ backgroundColor: color }}
+      >
+        {dpe}
+      </span>
     </div>
   );
 }
@@ -88,12 +64,10 @@ function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
   return (
     <div className="relative h-44 bg-gradient-to-br from-secondary to-muted flex items-center justify-center overflow-hidden group">
       <span className="text-3xl font-display text-muted-foreground/20">{type}</span>
-      {/* Photo count badge */}
       <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/60 rounded-full px-2 py-0.5">
         <Images size={11} className="text-white" />
         <span className="text-[10px] text-white font-medium">{photos}</span>
       </div>
-      {/* Arrows */}
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrent((p) => (p - 1 + photos) % photos); }}
         className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
@@ -106,7 +80,6 @@ function PhotoCarousel({ photos, type }: { photos: number; type: string }) {
       >
         <ChevronRight size={14} className="text-white" />
       </button>
-      {/* Dots */}
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
         {Array.from({ length: Math.min(photos, 5) }).map((_, i) => (
           <span key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === current ? "bg-white scale-125" : "bg-white/40"}`} />
@@ -215,7 +188,6 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                               {item.viewsTrend}
                             </span>
                           )}
-                          {/* Edit icon */}
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                             className="w-6 h-6 rounded-md bg-secondary/60 hover:bg-secondary flex items-center justify-center transition-colors"
@@ -252,8 +224,8 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                         </div>
                       )}
 
-                      {/* DPE SeLoger-style */}
-                      <DpeBar dpe={item.dpe} />
+                      {/* DPE compact badge */}
+                      <DpeBadge dpe={item.dpe} />
 
                       {/* Mini map placeholder */}
                       <div className="mt-3 h-[60px] rounded-lg bg-[#1E2530] flex items-center justify-center">
