@@ -61,7 +61,7 @@ export default function Messaging() {
                     {c.unread && <span className="w-2 h-2 rounded-full bg-primary animate-pulse-gold" />}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 truncate">{c.lastMessage}</p>
-                  <div className="flex items-center gap-1 text-xs font-semibold text-primary mt-1.5 bg-primary/8 rounded px-1.5 py-0.5 w-fit">
+                <div className="flex items-center gap-1 text-xs font-bold mt-1.5 bg-destructive/15 border border-destructive/30 text-destructive rounded-md px-2 py-1 w-fit animate-pulse">
                     <Clock size={10} /> {c.timer}
                   </div>
                 </button>
@@ -80,7 +80,7 @@ export default function Messaging() {
               </div>
               <div>
                 <p className="font-semibold text-sm">{conv?.name}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><span className="flex items-center gap-1 font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5"><Clock size={10} /> {conv?.timer}</span></p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><span className="flex items-center gap-1.5 font-bold text-destructive bg-destructive/15 border border-destructive/30 rounded-md px-2 py-1 animate-pulse"><Clock size={11} /> {conv?.timer}</span></p>
               </div>
             </div>
           </div>
