@@ -35,6 +35,7 @@ const mockCards = [
 
 const typeFilters = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison", "Ensemble immobilier mixte"];
 const budgetFilters = ["Tous", "< 500K", "500K–1M", "1M–5M", "> 5M"];
+const locationFilters = ["Toutes", "Paris", "Île-de-France", "Lyon", "Marseille", "Bordeaux", "Nantes", "Toulouse", "Autres"];
 
 type CardType = (typeof mockCards)[0];
 
@@ -137,6 +138,8 @@ function FiltersModal({
   setTypeFilter,
   budgetFilter,
   setBudgetFilter,
+  locationFilter,
+  setLocationFilter,
   onApply,
 }: {
   open: boolean;
@@ -145,9 +148,11 @@ function FiltersModal({
   setTypeFilter: (v: string) => void;
   budgetFilter: string;
   setBudgetFilter: (v: string) => void;
+  locationFilter: string;
+  setLocationFilter: (v: string) => void;
   onApply: () => void;
 }) {
-  const activeCount = (typeFilter !== "Tous" ? 1 : 0) + (budgetFilter !== "Tous" ? 1 : 0);
+  const activeCount = (typeFilter !== "Tous" ? 1 : 0) + (budgetFilter !== "Tous" ? 1 : 0) + (locationFilter !== "Toutes" ? 1 : 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -196,13 +201,33 @@ function FiltersModal({
               ))}
             </div>
           </div>
+
+          {/* Location filter */}
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">Localisation</p>
+            <div className="flex flex-wrap gap-2">
+              {locationFilters.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setLocationFilter(f)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
+                    locationFilter === f
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+                  }`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-3 pt-2">
           <Button
             variant="outline"
             className="flex-1 border-border/50"
-            onClick={() => { setTypeFilter("Tous"); setBudgetFilter("Tous"); }}
+            onClick={() => { setTypeFilter("Tous"); setBudgetFilter("Tous"); setLocationFilter("Toutes"); }}
           >
             Réinitialiser
           </Button>
@@ -229,8 +254,9 @@ export default function Discovery() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState("Tous");
   const [budgetFilter, setBudgetFilter] = useState("Tous");
+  const [locationFilter, setLocationFilter] = useState("Toutes");
 
-  const activeFilterCount = (typeFilter !== "Tous" ? 1 : 0) + (budgetFilter !== "Tous" ? 1 : 0);
+  const activeFilterCount = (typeFilter !== "Tous" ? 1 : 0) + (budgetFilter !== "Tous" ? 1 : 0) + (locationFilter !== "Toutes" ? 1 : 0);
 
   const applyFilters = useCallback(() => {
     let filtered = allCards;
@@ -245,9 +271,17 @@ export default function Discovery() {
         return true;
       });
     }
+    if (locationFilter !== "Toutes") {
+      filtered = filtered.filter((c) => {
+        if (locationFilter === "Paris") return c.location.startsWith("Paris");
+        if (locationFilter === "Île-de-France") return ["Paris", "Levallois-Perret", "Neuilly-sur-Seine", "Versailles", "Roissy CDG", "Rungis MIN"].some((l) => c.location.includes(l));
+        if (locationFilter === "Autres") return !["Paris", "Lyon", "Marseille", "Bordeaux", "Nantes", "Toulouse", "Levallois-Perret", "Neuilly-sur-Seine", "Versailles", "Roissy CDG", "Rungis MIN"].some((l) => c.location.includes(l));
+        return c.location.toLowerCase().includes(locationFilter.toLowerCase());
+      });
+    }
     setCards(filtered);
     setHistory([]);
-  }, [allCards, typeFilter, budgetFilter]);
+  }, [allCards, typeFilter, budgetFilter, locationFilter]);
 
   const handleSwipe = useCallback((direction: "left" | "right") => {
     const current = cards[cards.length - 1];
@@ -299,9 +333,10 @@ export default function Discovery() {
             )}
           </Button>
           {activeFilterCount > 0 && (
-            <span className="text-xs text-muted-foreground">
-              {typeFilter !== "Tous" && <span className="mr-1 bg-muted/30 border border-border/30 px-2 py-0.5 rounded-full">{typeFilter}</span>}
+            <span className="text-xs text-muted-foreground flex flex-wrap gap-1">
+              {typeFilter !== "Tous" && <span className="bg-muted/30 border border-border/30 px-2 py-0.5 rounded-full">{typeFilter}</span>}
               {budgetFilter !== "Tous" && <span className="bg-muted/30 border border-border/30 px-2 py-0.5 rounded-full">{budgetFilter}</span>}
+              {locationFilter !== "Toutes" && <span className="bg-muted/30 border border-border/30 px-2 py-0.5 rounded-full">{locationFilter}</span>}
             </span>
           )}
         </div>
@@ -369,6 +404,8 @@ export default function Discovery() {
         setTypeFilter={setTypeFilter}
         budgetFilter={budgetFilter}
         setBudgetFilter={setBudgetFilter}
+        locationFilter={locationFilter}
+        setLocationFilter={setLocationFilter}
         onApply={applyFilters}
       />
       <MatchCelebrationModal open={matchModal} onOpenChange={setMatchModal} matchName={lastMatch?.title ?? ""} matchOwner={lastMatch?.owner ?? ""} compatibility={lastMatch?.compatibility ?? 0} />
