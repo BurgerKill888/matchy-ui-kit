@@ -1,7 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, MapPinned, Pencil, Images, Zap } from "lucide-react";
+import { Plus, Eye, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Pencil, Images, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -218,19 +218,14 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                         })()}
                       </div>
 
+                      {/* DPE compact badge */}
+                      <DpeBadge dpe={item.dpe} />
+
                       {item.matches > 0 && (
                         <div className="mt-2 flex items-center gap-1 text-xs text-primary">
                           <Heart size={12} /> {item.matches} match(es)
                         </div>
                       )}
-
-                      {/* DPE compact badge */}
-                      <DpeBadge dpe={item.dpe} />
-
-                      {/* Mini map placeholder */}
-                      <div className="mt-3 h-[60px] rounded-lg bg-[#1E2530] flex items-center justify-center">
-                        <MapPinned size={16} className="text-primary" />
-                      </div>
                     </div>
                   </div>
                 </Link>
