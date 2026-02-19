@@ -1,11 +1,12 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Clock, Send, User, Euro, Ruler, ExternalLink, FolderOpen, MessageSquare, Lock } from "lucide-react";
+import { Clock, Send, User, Euro, Ruler, ExternalLink, FolderOpen, MessageSquare, Lock, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { Link } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const mockConversations = [
   { id: 1, name: "SCI Patrimoine", lastMessage: "Quand pouvons-nous visiter ?", timer: "2j 14h", unread: true, property: "Bureau 350m² Paris 8e", surface: "350m²", price: "2 800 000 €", compatibility: 92, dataRoomAccess: false },
@@ -22,6 +23,7 @@ const mockMessages = [
 export default function Messaging() {
   const [selectedConv, setSelectedConv] = useState(1);
   const [message, setMessage] = useState("");
+  const [dataRoomModalOpen, setDataRoomModalOpen] = useState(false);
   const { isVendeur } = useUserSpace();
   const conv = mockConversations.find((c) => c.id === selectedConv);
   const hasConversations = mockConversations.length > 0;
@@ -47,7 +49,7 @@ export default function Messaging() {
             <h2 className="font-display text-lg font-semibold mb-4">Conversations</h2>
             <div className="space-y-1">
               {mockConversations.map((c) => (
-                <button
+                  <button
                   key={c.id}
                   onClick={() => setSelectedConv(c.id)}
                   className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
@@ -59,7 +61,7 @@ export default function Messaging() {
                     {c.unread && <span className="w-2 h-2 rounded-full bg-primary animate-pulse-gold" />}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 truncate">{c.lastMessage}</p>
-                  <div className="flex items-center gap-1 text-xs text-primary/60 mt-1">
+                  <div className="flex items-center gap-1 text-xs font-semibold text-primary mt-1.5 bg-primary/8 rounded px-1.5 py-0.5 w-fit">
                     <Clock size={10} /> {c.timer}
                   </div>
                 </button>
@@ -78,7 +80,7 @@ export default function Messaging() {
               </div>
               <div>
                 <p className="font-semibold text-sm">{conv?.name}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock size={10} /> Timer : {conv?.timer}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><span className="flex items-center gap-1 font-semibold text-primary bg-primary/10 rounded px-1.5 py-0.5"><Clock size={10} /> {conv?.timer}</span></p>
               </div>
             </div>
           </div>
@@ -90,7 +92,6 @@ export default function Messaging() {
                 <span className="font-semibold text-foreground text-sm truncate">{conv.property}</span>
                 <span className="flex items-center gap-1 shrink-0"><Ruler size={11} /> {conv.surface}</span>
                 <span className="flex items-center gap-1 shrink-0"><Euro size={11} /> {conv.price}</span>
-                <span className="text-primary font-bold shrink-0">{conv.compatibility}%</span>
               </div>
               <div className="flex gap-2 shrink-0">
                 {/* Acquéreur: Data Room button */}
@@ -102,7 +103,7 @@ export default function Messaging() {
                       </Button>
                     </Link>
                   ) : (
-                    <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
+                    <Button variant="outline" size="sm" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]" onClick={() => setDataRoomModalOpen(true)}>
                       <Lock size={12} className="mr-1" /> Demander accès Data Room
                     </Button>
                   )
@@ -139,6 +140,24 @@ export default function Messaging() {
           </div>
         </div>
       </div>
+
+      {/* Data Room Request Confirmation Modal */}
+      <Dialog open={dataRoomModalOpen} onOpenChange={setDataRoomModalOpen}>
+        <DialogContent className="sm:max-w-sm bg-card border-border text-center">
+          <div className="flex flex-col items-center py-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <CheckCircle2 className="text-primary" size={28} />
+            </div>
+            <DialogTitle className="font-display text-xl mb-2">Demande envoyée !</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Votre demande d'accès à la Data Room a bien été transmise au vendeur. Vous serez notifié dès qu'il l'aura acceptée.
+            </DialogDescription>
+          </div>
+          <DialogFooter>
+            <Button className="w-full" onClick={() => setDataRoomModalOpen(false)}>Compris</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }
