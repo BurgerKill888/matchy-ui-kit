@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus, Clock, Heart, FileText, Eye, ArrowRight, Search,
-  Compass, AlertTriangle, Star, ClipboardList
+  Compass, AlertTriangle, Star, ClipboardList, Lock, ImageIcon
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -11,14 +11,14 @@ import { useUserSpace } from "@/contexts/UserSpaceContext";
 
 // --- Mock Data ---
 const vendeurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, status: "new" as const, premium: false },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "5j 06h", timerHours: 122, status: "in_conversation" as const, premium: false },
-  { id: 3, label: "Terrain 2ha Bordeaux", owner: "Nexity Régions", timer: "0j 19h", timerHours: 19, status: "new" as const, premium: true },
+  { id: 1, title: "Bureau 350m² Paris 8e", location: "Paris 8e", surface: "350 m²", price: "2 800 000 €", condition: "Prix ferme", photos: 4, matchs: 3, timer: "2j 14h", timerHours: 62, status: "active" as string, offmarket: false, acquéreur: "SCI Patrimoine" },
+  { id: 2, title: "Immeuble 1200m² Lyon 6e", location: "Lyon 6e", surface: "1 200 m²", price: "4 500 000 €", condition: "Négociable", photos: 6, matchs: 1, timer: "5j 06h", timerHours: 126, status: "active" as string, offmarket: true, acquéreur: "Foncière Grand Ouest" },
+  { id: 3, title: "Terrain 2ha Bordeaux", location: "Bordeaux", surface: "20 000 m²", price: "1 200 000 €", condition: "Négociable", photos: 3, matchs: 0, timer: "0j 19h", timerHours: 19, status: "active" as string, offmarket: false, acquéreur: "Nexity Régions" },
 ];
 
 const acquereurMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", owner: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, status: "new" as const, premium: false },
-  { id: 2, label: "Immeuble mixte Lyon 6e", owner: "Foncière Grand Ouest", timer: "0j 06h", timerHours: 6, status: "in_conversation" as const, premium: false },
+  { id: 1, title: "Bureau 350m² Paris 8e", location: "Paris 8e", surface: "350 m²", price: "2 800 000 €", condition: "Prix ferme", photos: 4, matchs: 3, timer: "2j 14h", timerHours: 62, status: "active" as string, offmarket: false, acquéreur: "SCI Patrimoine" },
+  { id: 2, title: "Immeuble mixte Lyon 6e", location: "Lyon 6e", surface: "800 m²", price: "3 200 000 €", condition: "Négociable", photos: 5, matchs: 1, timer: "0j 06h", timerHours: 6, status: "active" as string, offmarket: false, acquéreur: "Foncière Grand Ouest" },
 ];
 
 // --- KPI Card ---
@@ -47,50 +47,69 @@ function getTimerColor(hours: number) {
   return "text-muted-foreground";
 }
 
-// --- Match Card ---
+// --- Horizontal Match Card ---
 function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: number }) {
-  const timerColor = getTimerColor(match.timerHours);
+  const timerUrgent = match.timerHours < 24;
   return (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.08 }}
-      className="glass-card rounded-xl p-4 flex items-center justify-between group hover:border-white/20 transition-all duration-200"
     >
-      {/* Left: icon + info */}
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="relative w-9 h-9 rounded-lg border border-white/20 flex items-center justify-center shrink-0">
-          <Heart size={16} className="text-primary" />
-          {match.status === "new" && (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-primary" />
-          )}
-        </div>
-        <div className="min-w-0">
-          <p className="font-semibold text-sm text-foreground truncate">{match.label}</p>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <p className="text-xs text-muted-foreground">{match.owner}</p>
-            {match.status === "in_conversation" && (
-              <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-white/20 text-muted-foreground">
-                en conversation
-              </Badge>
+      <Link to="/matches" className="block">
+        <div className="glass-card rounded-xl overflow-hidden flex group hover:border-white/20 transition-all duration-200">
+          {/* Image placeholder */}
+          <div className="relative w-[180px] min-h-[130px] bg-gradient-to-br from-secondary to-background flex items-center justify-center shrink-0">
+            <span className="text-muted-foreground/20 text-2xl italic font-light">Photo</span>
+            <div className="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-0.5 text-[10px] text-white/70 flex items-center gap-1">
+              {match.photos} <ImageIcon size={10} />
+            </div>
+            {match.status === "paused" && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-[11px] font-bold text-white/60 tracking-wider">⏸ EN PAUSE</span>
+              </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Right: timer + button */}
-      <div className="flex items-center gap-3 shrink-0 ml-4">
-        <div className="flex items-center gap-1.5 text-xs whitespace-nowrap">
-          {match.premium ? <Star size={11} className="text-primary" /> : <Clock size={11} className="text-muted-foreground" />}
-          {match.timerHours < 24 && <AlertTriangle size={11} className="text-destructive" />}
-          <span className={timerColor}>{match.timer}</span>
+          {/* Content */}
+          <div className="flex-1 p-3.5 flex flex-col justify-center min-w-0">
+            {/* Price row */}
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="text-lg font-extrabold text-foreground">
+                {match.offmarket ? "Prix confidentiel" : match.price}
+              </span>
+              {match.offmarket ? (
+                <span className="text-[11px] text-primary flex items-center gap-1"><Lock size={10} /> Off-market</span>
+              ) : (
+                <span className="text-[11px] text-primary">{match.condition}</span>
+              )}
+            </div>
+
+            {/* Title */}
+            <p className="text-sm font-semibold text-foreground mb-1 truncate">{match.title}</p>
+
+            {/* Location + surface + acquéreur */}
+            <p className="text-xs text-muted-foreground mb-2.5 truncate">
+              {match.location} · {match.surface}
+              {match.acquéreur && (
+                <><span className="text-white/10 mx-1.5">·</span><span className="text-foreground font-semibold">{match.acquéreur}</span></>
+              )}
+            </p>
+
+            {/* Footer: timer + matchs */}
+            <div className="flex items-center gap-4">
+              <span className={`flex items-center gap-1 text-[11px] ${timerUrgent ? "text-warning" : "text-muted-foreground"}`}>
+                {timerUrgent ? <AlertTriangle size={11} /> : <Clock size={11} />} {match.timer}
+              </span>
+              {match.matchs > 0 ? (
+                <span className="text-xs font-bold text-primary">🎯 {match.matchs} match{match.matchs > 1 ? "s" : ""}</span>
+              ) : (
+                <span className="text-[11px] text-white/20">Aucun match</span>
+              )}
+            </div>
+          </div>
         </div>
-        <Link to="/matches">
-          <Button size="sm" className="text-xs px-3 h-8 glow-gold">
-            Voir <ArrowRight size={12} className="ml-1" />
-          </Button>
-        </Link>
-      </div>
+      </Link>
     </motion.div>
   );
 }
