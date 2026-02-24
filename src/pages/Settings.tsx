@@ -12,6 +12,10 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import {
+  LogoutModal, LogoutAllDevicesModal, LogoutDoneModal,
+  DeleteAccountStep1Modal, DeleteAccountStep2Modal, AccountDeletedModal,
+} from "@/components/modals/SystemModals";
 
 const documents = [
   { name: "Extrait Kbis", status: "valid" as const },
@@ -42,9 +46,18 @@ const mockInvoices = [
 
 export default function Settings() {
   const hasAllValid = documents.every((d) => d.status === "valid");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [twoFactor, setTwoFactor] = useState(false);
   const [sessionAlerts, setSessionAlerts] = useState(true);
+
+  // Logout modals
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutAllOpen, setLogoutAllOpen] = useState(false);
+  const [logoutDoneOpen, setLogoutDoneOpen] = useState(false);
+
+  // Delete account modals
+  const [delStep1Open, setDelStep1Open] = useState(false);
+  const [delStep2Open, setDelStep2Open] = useState(false);
+  const [delDoneOpen, setDelDoneOpen] = useState(false);
 
   return (
     <AppLayout>
@@ -282,7 +295,11 @@ export default function Settings() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Se déconnecter de tous les appareils</p>
             </div>
-            <Button variant="outline" size="sm" className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 transition-transform duration-200 hover:scale-[1.02]">
+            <Button
+              variant="outline" size="sm"
+              className="text-xs gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 transition-transform duration-200 hover:scale-[1.02]"
+              onClick={() => setLogoutAllOpen(true)}
+            >
               <LogOut size={12} /> Déconnecter
             </Button>
           </div>
@@ -328,30 +345,27 @@ export default function Settings() {
               <p className="text-sm font-medium">Supprimer le compte</p>
               <p className="text-xs text-muted-foreground">Cette action est irréversible. Toutes vos données seront supprimées.</p>
             </div>
-            {!showDeleteConfirm ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs border-destructive/40 text-destructive hover:bg-destructive/10 transition-transform duration-200 hover:scale-[1.02]"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 size={12} className="mr-1" /> Supprimer
-              </Button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setShowDeleteConfirm(false)}>Annuler</Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="text-xs"
-                >
-                  Confirmer la suppression
-                </Button>
-              </div>
-            )}
+            {/* Single delete button triggers modal flow */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs border-destructive/40 text-destructive hover:bg-destructive/10 transition-transform duration-200 hover:scale-[1.02]"
+              onClick={() => setDelStep1Open(true)}
+            >
+              <Trash2 size={12} className="mr-1" /> Supprimer
+            </Button>
           </div>
         </motion.div>
       </div>
+
+      {/* System modals */}
+      <LogoutModal open={logoutOpen} onOpenChange={setLogoutOpen} onConfirm={() => { setLogoutOpen(false); setLogoutDoneOpen(true); }} />
+      <LogoutAllDevicesModal open={logoutAllOpen} onOpenChange={setLogoutAllOpen} onConfirm={() => { setLogoutAllOpen(false); setLogoutDoneOpen(true); }} />
+      <LogoutDoneModal open={logoutDoneOpen} onOpenChange={setLogoutDoneOpen} onHome={() => setLogoutDoneOpen(false)} />
+
+      <DeleteAccountStep1Modal open={delStep1Open} onOpenChange={setDelStep1Open} onContinue={() => { setDelStep1Open(false); setDelStep2Open(true); }} />
+      <DeleteAccountStep2Modal open={delStep2Open} onOpenChange={setDelStep2Open} onBack={() => { setDelStep2Open(false); setDelStep1Open(true); }} onConfirm={() => { setDelStep2Open(false); setDelDoneOpen(true); }} />
+      <AccountDeletedModal open={delDoneOpen} onOpenChange={setDelDoneOpen} onHome={() => setDelDoneOpen(false)} />
     </AppLayout>
   );
 }
