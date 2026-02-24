@@ -36,6 +36,7 @@ interface MatchItem {
   surface: string;
   condition: string;
   dataRoomAccess: boolean;
+  image: string;
 }
 
 interface ChatMessage {
@@ -47,10 +48,10 @@ interface ChatMessage {
 
 // --- Mock data ---
 const mockMatches: MatchItem[] = [
-  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false },
-  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true },
-  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false },
-  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false },
+  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop" },
+  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true, image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop" },
+  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop" },
 ];
 
 const mockMessagesByMatch: Record<number, ChatMessage[]> = {
@@ -173,7 +174,7 @@ export default function Matches() {
     <AppLayout>
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Left column — match list */}
-        <div className="w-72 xl:w-80 border-r border-border flex flex-col shrink-0">
+        <div className="w-80 xl:w-[22rem] border-r border-border flex flex-col shrink-0">
           <MatchListColumn
             filter={filter} setFilter={setFilter} counts={counts}
             typeFilter={typeFilter} setTypeFilter={setTypeFilter}
@@ -404,7 +405,7 @@ function MatchListColumn({
             />
           </div>
         ) : (
-          <div className="px-2 pb-2 space-y-0.5">
+          <div className="px-2 pb-2 space-y-2">
             {active.map((m) => (
               <MatchListItem key={m.id} match={m} selected={selectedId === m.id} onSelect={onSelect} />
             ))}
@@ -452,35 +453,53 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
   return (
     <button
       onClick={() => onSelect(match.id)}
-      className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex gap-2.5 ${
+      className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden ${
         selected
           ? "bg-primary/10 border border-primary/30"
           : isExpired
             ? "opacity-50 hover:bg-secondary/50"
-            : "hover:bg-secondary"
+            : "hover:bg-secondary/60"
       }`}
     >
-      {/* Type color bar */}
-      <div className="w-1 rounded-full shrink-0 self-stretch" style={{ backgroundColor: typeColor }} />
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-1">
-          <span className="font-semibold text-sm truncate">{match.property}</span>
-          {match.unread && !isExpired && <span className="w-2 h-2 rounded-full bg-primary animate-pulse-gold shrink-0" />}
+      {/* Image + overlay */}
+      <div className="relative h-28 w-full overflow-hidden">
+        <img
+          src={match.image}
+          alt={match.property}
+          className="w-full h-full object-cover"
+        />
+        {/* Type color strip */}
+        <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: typeColor }} />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
+        {/* Price overlay */}
+        <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+          <span className="font-display text-lg font-bold text-foreground drop-shadow-lg">{match.price}</span>
+          <span className="text-primary font-bold text-sm drop-shadow-lg">{match.compatibility}%</span>
         </div>
-        <p className="text-xs text-muted-foreground truncate mt-0.5">{match.counterpart}</p>
+        {/* Unread dot */}
+        {match.unread && !isExpired && (
+          <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-primary animate-pulse-gold ring-2 ring-background" />
+        )}
+      </div>
 
-        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
+      {/* Info */}
+      <div className="p-2.5 space-y-1">
+        <p className="font-semibold text-sm truncate">{match.property}</p>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapPin size={10} /> <span className="truncate">{match.location}</span>
+          <span className="text-border">·</span>
+          <Ruler size={10} /> {match.surface}
+        </div>
+        <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
           <span className={`text-[10px] flex items-center gap-0.5 ${getTimerStyle(match.timerHours)}`}>
             {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={9} />}
             <Clock size={9} /> {match.timer}
           </span>
-          <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
         </div>
-
         {match.lastMessage && (
-          <p className="text-[11px] text-muted-foreground truncate mt-1">{match.lastMessage}</p>
+          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{match.lastMessage}</p>
         )}
       </div>
     </button>
