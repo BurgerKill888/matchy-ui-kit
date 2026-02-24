@@ -14,7 +14,7 @@ type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean
 
 const vendeurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
-{ label: "Mes matches & échanges", icon: Heart, href: "/matches" },
+{ label: "Mes matches", icon: Heart, href: "/matches" },
 { label: "Mes annonces", icon: FileText, href: "/listings" },
 { label: "Paramètres", icon: Settings, href: "/settings" }];
 
@@ -22,7 +22,7 @@ const vendeurNav: NavItem[] = [
 const acquereurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
 { label: "Découvrir", icon: Compass, href: "/discovery" },
-{ label: "Mes matches & échanges", icon: Heart, href: "/matches" },
+{ label: "Mes matches", icon: Heart, href: "/matches" },
 { label: "Mes fiches", icon: FileText, href: "/criteria" },
 { label: "Catalogue", icon: LayoutGrid, href: "/catalog", vip: true },
 { label: "Paramètres", icon: Settings, href: "/settings" }];
