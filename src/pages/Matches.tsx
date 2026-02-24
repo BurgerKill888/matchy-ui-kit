@@ -6,14 +6,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Clock, Heart, MessageSquare, Send, Eye, AlertTriangle,
-  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X
+  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X, Filter, ChevronDown, Check
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import EmptyState from "@/components/EmptyState";
 import { Link } from "react-router-dom";
-import { getTypeColor } from "@/lib/propertyTypes";
+import { getTypeColor, typeColors } from "@/lib/propertyTypes";
 import { motion, AnimatePresence } from "framer-motion";
 
 // --- Types ---
@@ -85,6 +85,8 @@ const pipelineSteps: { key: Status; label: string }[] = [
   { key: "expired", label: "Expiré" },
 ];
 
+const allPropertyTypes = ["Maison", "Immeuble", "Appartement", "Terrain à potentiel", "Local commercial", "Bureaux", "Entrepôt / activité", "Ensemble immobilier mixte"];
+
 // --- Helpers ---
 function getTimerStyle(hours: number) {
   if (hours <= 0) return "text-muted-foreground";
@@ -102,6 +104,7 @@ export default function Matches() {
   const isNarrow = useIsNarrow();
 
   const [filter, setFilter] = useState<Status | "all">("all");
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [mobileView, setMobileView] = useState<"list" | "chat" | "details">("list");
@@ -112,7 +115,8 @@ export default function Matches() {
     return acc;
   }, {} as Record<Status, number>);
 
-  const filtered = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
+  const filteredByStatus = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
+  const filtered = typeFilter.length === 0 ? filteredByStatus : filteredByStatus.filter((m) => typeFilter.includes(m.type));
   const active = filtered.filter((m) => m.status !== "expired");
   const expired = filtered.filter((m) => m.status === "expired");
   const selected = mockMatches.find((m) => m.id === selectedId) ?? null;
@@ -132,6 +136,7 @@ export default function Matches() {
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
               <MatchListColumn
                 filter={filter} setFilter={setFilter} counts={counts}
+                typeFilter={typeFilter} setTypeFilter={setTypeFilter}
                 active={active} expired={expired} selectedId={selectedId}
                 onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
               />
@@ -171,6 +176,7 @@ export default function Matches() {
         <div className="w-72 xl:w-80 border-r border-border flex flex-col shrink-0">
           <MatchListColumn
             filter={filter} setFilter={setFilter} counts={counts}
+            typeFilter={typeFilter} setTypeFilter={setTypeFilter}
             active={active} expired={expired} selectedId={selectedId}
             onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
           />
@@ -252,17 +258,81 @@ function useIsNarrow() {
 // LEFT COLUMN — Match list
 // =====================
 function MatchListColumn({
-  filter, setFilter, counts, active, expired, selectedId, onSelect, filtered, isAcquereur,
+  filter, setFilter, counts, typeFilter, setTypeFilter, active, expired, selectedId, onSelect, filtered, isAcquereur,
 }: {
   filter: Status | "all"; setFilter: (f: Status | "all") => void;
-  counts: Record<Status, number>; active: MatchItem[]; expired: MatchItem[];
+  counts: Record<Status, number>;
+  typeFilter: string[]; setTypeFilter: (f: string[]) => void;
+  active: MatchItem[]; expired: MatchItem[];
   selectedId: number | null; onSelect: (id: number) => void;
   filtered: MatchItem[]; isAcquereur: boolean;
 }) {
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+
+  function toggleType(t: string) {
+    setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
+
   return (
     <>
-      <div className="p-4 pb-2">
+      <div className="p-4 pb-2 flex items-center justify-between">
         <h2 className="font-display text-lg font-semibold">Mes mises en relation</h2>
+        {/* Type filter dropdown */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs h-7 gap-1 ${typeFilter.length > 0 ? "border-primary text-primary" : ""}`}
+            onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
+          >
+            <Filter size={12} />
+            {typeFilter.length > 0 ? `${typeFilter.length} filtre${typeFilter.length > 1 ? "s" : ""}` : "Typologie"}
+            <ChevronDown size={11} className={`transition-transform ${typeDropdownOpen ? "rotate-180" : ""}`} />
+          </Button>
+          <AnimatePresence>
+            {typeDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 top-full mt-1 z-50 w-56 rounded-lg border border-border bg-card shadow-elevated p-1.5"
+                >
+                  {allPropertyTypes.map((t) => {
+                    const isActive = typeFilter.includes(t);
+                    const color = getTypeColor(t);
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => toggleType(t)}
+                        className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                          isActive ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        }`}
+                      >
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        <span className="flex-1 text-left">{t}</span>
+                        {isActive && <Check size={12} className="text-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                  {typeFilter.length > 0 && (
+                    <>
+                      <Separator className="my-1" />
+                      <button
+                        onClick={() => setTypeFilter([])}
+                        className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground py-1"
+                      >
+                        Réinitialiser
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Pipeline filters */}
