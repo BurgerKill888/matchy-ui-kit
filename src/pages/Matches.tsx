@@ -6,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Clock, Heart, MessageSquare, Send, Eye, AlertTriangle,
-  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X, Filter, ChevronDown, Check
+  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X, Filter, ChevronDown, Check, ArrowUpDown, ArrowUp, ArrowDown
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
@@ -107,6 +107,7 @@ export default function Matches() {
 
   const [filter, setFilter] = useState<Status | "all">("all");
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [sortOrder, setSortOrder] = useState<"none" | "asc" | "desc">("none");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [mobileView, setMobileView] = useState<"list" | "chat" | "details">("list");
@@ -118,7 +119,12 @@ export default function Matches() {
   }, {} as Record<Status, number>);
 
   const filteredByStatus = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
-  const filtered = typeFilter.length === 0 ? filteredByStatus : filteredByStatus.filter((m) => typeFilter.includes(m.type));
+  const filteredByType = typeFilter.length === 0 ? filteredByStatus : filteredByStatus.filter((m) => typeFilter.includes(m.type));
+  const filtered = sortOrder === "none" ? filteredByType : [...filteredByType].sort((a, b) => {
+    const priceA = parseInt(a.price.replace(/\s/g, "").replace("€", ""));
+    const priceB = parseInt(b.price.replace(/\s/g, "").replace("€", ""));
+    return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
+  });
   const active = filtered.filter((m) => m.status !== "expired");
   const expired = filtered.filter((m) => m.status === "expired");
   const selected = mockMatches.find((m) => m.id === selectedId) ?? null;
@@ -139,6 +145,7 @@ export default function Matches() {
               <MatchListColumn
                 filter={filter} setFilter={setFilter} counts={counts}
                 typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+                sortOrder={sortOrder} setSortOrder={setSortOrder}
                 active={active} expired={expired} selectedId={selectedId}
                 onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
               />
@@ -179,6 +186,7 @@ export default function Matches() {
           <MatchListColumn
             filter={filter} setFilter={setFilter} counts={counts}
             typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+            sortOrder={sortOrder} setSortOrder={setSortOrder}
             active={active} expired={expired} selectedId={selectedId}
             onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
           />
@@ -260,11 +268,12 @@ function useIsNarrow() {
 // LEFT COLUMN — Match list
 // =====================
 function MatchListColumn({
-  filter, setFilter, counts, typeFilter, setTypeFilter, active, expired, selectedId, onSelect, filtered, isAcquereur,
+  filter, setFilter, counts, typeFilter, setTypeFilter, sortOrder, setSortOrder, active, expired, selectedId, onSelect, filtered, isAcquereur,
 }: {
   filter: Status | "all"; setFilter: (f: Status | "all") => void;
   counts: Record<Status, number>;
   typeFilter: string[]; setTypeFilter: (f: string[]) => void;
+  sortOrder: "none" | "asc" | "desc"; setSortOrder: (s: "none" | "asc" | "desc") => void;
   active: MatchItem[]; expired: MatchItem[];
   selectedId: number | null; onSelect: (id: number) => void;
   filtered: MatchItem[]; isAcquereur: boolean;
@@ -274,6 +283,10 @@ function MatchListColumn({
 
   function toggleType(t: string) {
     setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
+
+  function cycleSortOrder() {
+    setSortOrder(sortOrder === "none" ? "asc" : sortOrder === "asc" ? "desc" : "none");
   }
 
   const statusLabel = filter === "all" ? `Tous (${mockMatches.length})` : `${statusConfig[filter].label} (${counts[filter]})`;
@@ -392,6 +405,17 @@ function MatchListColumn({
             )}
           </AnimatePresence>
         </div>
+
+        {/* Sort button */}
+        <Button
+          variant="outline"
+          size="sm"
+          className={`text-xs h-7 w-7 p-0 shrink-0 ${sortOrder !== "none" ? "border-primary text-primary" : ""}`}
+          onClick={cycleSortOrder}
+          title={sortOrder === "none" ? "Trier par prix" : sortOrder === "asc" ? "Prix croissant" : "Prix décroissant"}
+        >
+          {sortOrder === "asc" ? <ArrowUp size={13} /> : sortOrder === "desc" ? <ArrowDown size={13} /> : <ArrowUpDown size={13} />}
+        </Button>
       </div>
 
       <ScrollArea className="flex-1">
@@ -495,12 +519,15 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
           <Ruler size={10} /> {match.surface}
         </div>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
           <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
           <span className={`text-[10px] flex items-center gap-0.5 ${getTimerStyle(match.timerHours)}`}>
             {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={9} />}
             <Clock size={9} /> {match.timer}
           </span>
+        </div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="text-[10px] text-muted-foreground">Closing</span>
+          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
         </div>
         {match.lastMessage && (
           <p className="text-[11px] text-muted-foreground truncate mt-0.5">{match.lastMessage}</p>
