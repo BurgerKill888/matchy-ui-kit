@@ -268,25 +268,82 @@ function MatchListColumn({
   filtered: MatchItem[]; isAcquereur: boolean;
 }) {
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
 
   function toggleType(t: string) {
     setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
   }
 
+  const statusLabel = filter === "all" ? `Tous (${mockMatches.length})` : `${statusConfig[filter].label} (${counts[filter]})`;
+
   return (
     <>
-      <div className="p-4 pb-2 flex items-center justify-between">
+      <div className="p-4 pb-2">
         <h2 className="font-display text-lg font-semibold">Mes mises en relation</h2>
+      </div>
+
+      {/* Filter buttons row */}
+      <div className="px-4 pb-3 flex items-center gap-2">
+        {/* Status filter dropdown */}
+        <div className="relative">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs h-7 gap-1 ${filter !== "all" ? "border-primary text-primary" : ""}`}
+            onClick={() => { setStatusDropdownOpen(!statusDropdownOpen); setTypeDropdownOpen(false); }}
+          >
+            <Heart size={12} />
+            {statusLabel}
+            <ChevronDown size={11} className={`transition-transform ${statusDropdownOpen ? "rotate-180" : ""}`} />
+          </Button>
+          <AnimatePresence>
+            {statusDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 top-full mt-1 z-50 w-52 rounded-lg border border-border bg-card shadow-elevated p-1.5"
+                >
+                  <button
+                    onClick={() => { setFilter("all"); setStatusDropdownOpen(false); }}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                      filter === "all" ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <span className="flex-1 text-left">Tous ({mockMatches.length})</span>
+                    {filter === "all" && <Check size={12} className="text-primary shrink-0" />}
+                  </button>
+                  {pipelineSteps.map((step) => (
+                    <button
+                      key={step.key}
+                      onClick={() => { setFilter(step.key); setStatusDropdownOpen(false); }}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        filter === step.key ? "bg-primary/10 text-foreground" : step.key === "expired" ? "text-muted-foreground/60 hover:bg-secondary hover:text-muted-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                      }`}
+                    >
+                      <span className="flex-1 text-left">{step.label} ({counts[step.key]})</span>
+                      {filter === step.key && <Check size={12} className="text-primary shrink-0" />}
+                    </button>
+                  ))}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+
         {/* Type filter dropdown */}
         <div className="relative">
           <Button
             variant="outline"
             size="sm"
             className={`text-xs h-7 gap-1 ${typeFilter.length > 0 ? "border-primary text-primary" : ""}`}
-            onClick={() => setTypeDropdownOpen(!typeDropdownOpen)}
+            onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setStatusDropdownOpen(false); }}
           >
             <Filter size={12} />
-            {typeFilter.length > 0 ? `${typeFilter.length} filtre${typeFilter.length > 1 ? "s" : ""}` : "Typologie"}
+            {typeFilter.length > 0 ? `${typeFilter.length} type${typeFilter.length > 1 ? "s" : ""}` : "Typologie"}
             <ChevronDown size={11} className={`transition-transform ${typeDropdownOpen ? "rotate-180" : ""}`} />
           </Button>
           <AnimatePresence>
@@ -298,7 +355,7 @@ function MatchListColumn({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-1 z-50 w-56 rounded-lg border border-border bg-card shadow-elevated p-1.5"
+                  className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-border bg-card shadow-elevated p-1.5"
                 >
                   {allPropertyTypes.map((t) => {
                     const isActive = typeFilter.includes(t);
@@ -333,20 +390,6 @@ function MatchListColumn({
             )}
           </AnimatePresence>
         </div>
-      </div>
-
-      {/* Pipeline filters */}
-      <div className="px-4 pb-3 flex flex-wrap gap-1.5">
-        <FilterPill active={filter === "all"} onClick={() => setFilter("all")} label={`Tous (${mockMatches.length})`} />
-        {pipelineSteps.map((step) => (
-          <FilterPill
-            key={step.key}
-            active={filter === step.key}
-            onClick={() => setFilter(step.key)}
-            label={`${step.label} (${counts[step.key]})`}
-            muted={step.key === "expired"}
-          />
-        ))}
       </div>
 
       <ScrollArea className="flex-1">
