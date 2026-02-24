@@ -1,13 +1,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, FileText, MessageSquare,
-  Settings, LogOut, Menu, X, Heart, Compass, FolderOpen, Crown, LayoutGrid } from
+  LayoutDashboard, FileText,
+  Settings, LogOut, Menu, X, Heart, Compass, Crown, LayoutGrid, PanelLeftClose, PanelLeftOpen } from
 "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationPanel from "@/components/NotificationPanel";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean;};
 
@@ -60,6 +61,7 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const { space, isAcquereur } = useUserSpace();
 
   const navItems = isAcquereur ? acquereurNav : vendeurNav;
@@ -101,41 +103,59 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 w-60 h-[calc(100vh-4rem)] bg-card border-r border-border transition-transform duration-200 flex flex-col`}>
-          <nav className="flex flex-col gap-1 p-4 flex-1">
+        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 ${collapsed ? 'w-14' : 'w-60'} h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-200 flex flex-col`}>
+          <nav className={`flex flex-col gap-1 ${collapsed ? 'p-2' : 'p-4'} flex-1`}>
             {navItems.map((item) => {
               const active = location.pathname === item.href ||
               item.href !== "/dashboard" && location.pathname.startsWith(item.href);
-              return (
+
+              const linkContent = (
                 <Link
                   key={item.href}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
+                  className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
                   active ?
                   "bg-primary/10 text-primary" :
-                  item.vip ?
-                  "text-muted-foreground hover:text-foreground hover:bg-secondary" :
                   "text-muted-foreground hover:text-foreground hover:bg-secondary"}`
                   }>
 
                   <item.icon size={18} />
-                  <span>{item.label}</span>
-                  {item.vip && (
+                  {!collapsed && <span>{item.label}</span>}
+                  {!collapsed && item.vip && (
                     <span className="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-primary">
                       <Crown size={11} />
                     </span>
                   )}
-                </Link>);
+                </Link>
+              );
 
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                    <TooltipContent side="right" className="text-xs">{item.label}</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return linkContent;
             })}
           </nav>
 
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
-              {space === "vendeur" ? "Mode Vendeur" : "Mode Acquéreur"}
-            </div>
+          {/* Collapse toggle + mode indicator */}
+          <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-border flex flex-col gap-2`}>
+            {!collapsed && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
+                {space === "vendeur" ? "Mode Vendeur" : "Mode Acquéreur"}
+              </div>
+            )}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="hidden md:flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary p-1.5"
+            >
+              {collapsed ? <PanelLeftOpen size={16} /> : <><PanelLeftClose size={16} /> <span>Réduire</span></>}
+            </button>
           </div>
         </aside>
 
