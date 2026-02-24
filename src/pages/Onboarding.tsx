@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ArrowLeft, ArrowRight, Check, Upload, X } from "lucide-react";
+import { Building2, ArrowLeft, ArrowRight, Check, Upload, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 /* ========== DATA ========== */
 const TYPOS_ACTIF = ["Maison", "Immeuble", "Appartement", "Terrain à potentiel", "Local commercial", "Bureaux", "Entrepôt / activité", "Ensemble immobilier mixte"];
@@ -151,6 +153,19 @@ function InputField({ label, placeholder, value, onChange, suffix, error, requir
 export default function Onboarding() {
   const navigate = useNavigate();
   const { setSpace } = useUserSpace();
+  const { signIn, signUp, resetPassword } = useAuth();
+  const { toast } = useToast();
+
+  // Auth gate
+  const [authView, setAuthView] = useState<"login" | "register" | "forgot">("login");
+  const [authDone, setAuthDone] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authFirstName, setAuthFirstName] = useState("");
+  const [authLastName, setAuthLastName] = useState("");
+  const [authCompany, setAuthCompany] = useState("");
+  const [authSubmitted, setAuthSubmitted] = useState(false);
 
   const [step, setStep] = useState(0); // 0=profil,1=operation,2=intro,3=questionnaire,4=confirm
   const [qStep, setQStep] = useState(0);
@@ -259,6 +274,192 @@ export default function Onboarding() {
   const goQBack = () => { setShowErr(false); if (qStep > 0) setQStep(qStep - 1); else setStep(2); };
 
   const anim = { initial: { opacity: 0, x: 30 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -30 }, transition: { duration: 0.25 } };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthSubmitted(true);
+    if (!authEmail || !authPassword) return;
+    setAuthLoading(true);
+    // Fictif : pas de vraie auth pour le moment
+    setTimeout(() => {
+      setAuthLoading(false);
+      setAuthDone(true);
+      toast({ title: "Connexion réussie", description: "Bienvenue sur Matchstone !" });
+    }, 600);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthSubmitted(true);
+    if (!authEmail || !authPassword || !authFirstName || !authLastName) return;
+    setAuthLoading(true);
+    setTimeout(() => {
+      setAuthLoading(false);
+      setAuthDone(true);
+      toast({ title: "Inscription réussie", description: "Bienvenue sur Matchstone !" });
+    }, 600);
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthSubmitted(true);
+    if (!authEmail) return;
+    setAuthLoading(true);
+    try {
+      const { error } = await resetPassword(authEmail);
+      if (error) throw error;
+      toast({ title: "Email envoyé", description: "Consultez votre boîte mail pour réinitialiser votre mot de passe." });
+      setAuthView("login");
+    } catch (err: any) {
+      toast({ title: "Erreur", description: err.message, variant: "destructive" });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // If auth not done, show auth gate
+  if (!authDone) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b border-border/50 bg-background/90 backdrop-blur-xl">
+          <div className="container flex items-center justify-center h-14">
+            <div className="flex items-center gap-2">
+              <Building2 className="text-primary" size={22} />
+              <span className="font-display text-lg font-bold">Match<span className="text-primary">stone</span></span>
+            </div>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center px-5 py-10">
+          <AnimatePresence mode="wait">
+            {/* LOGIN */}
+            {authView === "login" && (
+              <motion.div key="login" {...anim} className="w-full max-w-md">
+                <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+                  <h1 className="font-display text-2xl font-bold mb-1">Connexion</h1>
+                  <p className="text-sm text-muted-foreground mb-6">Accédez à votre compte Matchstone.</p>
+                  <form onSubmit={handleLogin} className="space-y-5">
+                    <div>
+                      <Label htmlFor="auth-email">Email <span className="text-destructive">*</span></Label>
+                      <Input id="auth-email" type="email" placeholder="jean@entreprise.com"
+                        value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+                        className={cn("mt-1.5 bg-background border-border", authSubmitted && !authEmail && "border-destructive ring-destructive/30 ring-2")} />
+                      {authSubmitted && !authEmail && <p className="text-xs text-destructive mt-1 flex items-center gap-1">⚠ Obligatoire</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="auth-pw">Mot de passe <span className="text-destructive">*</span></Label>
+                      <Input id="auth-pw" type="password" placeholder="Votre mot de passe"
+                        value={authPassword} onChange={e => setAuthPassword(e.target.value)}
+                        className={cn("mt-1.5 bg-background border-border", authSubmitted && !authPassword && "border-destructive ring-destructive/30 ring-2")} />
+                      {authSubmitted && !authPassword && <p className="text-xs text-destructive mt-1 flex items-center gap-1">⚠ Obligatoire</p>}
+                      <div className="flex justify-end mt-2">
+                        <button type="button" onClick={() => { setAuthView("forgot"); setAuthSubmitted(false); }}
+                          className="text-sm text-foreground hover:underline font-medium">Mot de passe oublié ?</button>
+                      </div>
+                    </div>
+                    <Button type="submit" className="w-full h-12 text-base font-bold" disabled={authLoading}>
+                      {authLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Se connecter
+                    </Button>
+                    <div className="flex items-center gap-3 my-1">
+                      <div className="flex-1 h-px bg-border" />
+                      <span className="text-xs text-muted-foreground">ou</span>
+                      <div className="flex-1 h-px bg-border" />
+                    </div>
+                    <Button type="button" variant="outline" className="w-full h-12 text-base font-bold" disabled>
+                      Continuer avec LinkedIn
+                    </Button>
+                    <p className="text-center text-sm text-muted-foreground">
+                      Pas de compte ?{" "}
+                      <button type="button" onClick={() => { setAuthView("register"); setAuthSubmitted(false); }}
+                        className="text-foreground hover:underline font-semibold underline">Créer un compte</button>
+                    </p>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+
+            {/* REGISTER */}
+            {authView === "register" && (
+              <motion.div key="register" {...anim} className="w-full max-w-md">
+                <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+                  <h1 className="font-display text-2xl font-bold mb-1">Créer un compte</h1>
+                  <p className="text-sm text-muted-foreground mb-6">Rejoignez Matchstone et accédez au matching immobilier.</p>
+                  <form onSubmit={handleRegister} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Prénom <span className="text-destructive">*</span></Label>
+                        <Input placeholder="Jean" value={authFirstName} onChange={e => setAuthFirstName(e.target.value)}
+                          className={cn("mt-1.5 bg-background border-border", authSubmitted && !authFirstName && "border-destructive ring-destructive/30 ring-2")} />
+                        {authSubmitted && !authFirstName && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                      </div>
+                      <div>
+                        <Label>Nom <span className="text-destructive">*</span></Label>
+                        <Input placeholder="Dupont" value={authLastName} onChange={e => setAuthLastName(e.target.value)}
+                          className={cn("mt-1.5 bg-background border-border", authSubmitted && !authLastName && "border-destructive ring-destructive/30 ring-2")} />
+                        {authSubmitted && !authLastName && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Société <span className="text-[10px] text-muted-foreground font-normal">(facultatif)</span></Label>
+                      <Input placeholder="Nom de votre entreprise" value={authCompany} onChange={e => setAuthCompany(e.target.value)}
+                        className="mt-1.5 bg-background border-border" />
+                    </div>
+                    <div>
+                      <Label>Email <span className="text-destructive">*</span></Label>
+                      <Input type="email" placeholder="jean@entreprise.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+                        className={cn("mt-1.5 bg-background border-border", authSubmitted && !authEmail && "border-destructive ring-destructive/30 ring-2")} />
+                      {authSubmitted && !authEmail && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                    </div>
+                    <div>
+                      <Label>Mot de passe <span className="text-destructive">*</span></Label>
+                      <Input type="password" placeholder="Minimum 6 caractères" value={authPassword} onChange={e => setAuthPassword(e.target.value)}
+                        className={cn("mt-1.5 bg-background border-border", authSubmitted && !authPassword && "border-destructive ring-destructive/30 ring-2")} />
+                      {authSubmitted && !authPassword && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                    </div>
+                    <Button type="submit" className="w-full h-12 text-base font-bold" disabled={authLoading}>
+                      {authLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Créer mon compte
+                    </Button>
+                    <p className="text-center text-sm text-muted-foreground">
+                      Déjà un compte ?{" "}
+                      <button type="button" onClick={() => { setAuthView("login"); setAuthSubmitted(false); }}
+                        className="text-foreground hover:underline font-semibold underline">Se connecter</button>
+                    </p>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+
+            {/* FORGOT PASSWORD */}
+            {authView === "forgot" && (
+              <motion.div key="forgot" {...anim} className="w-full max-w-md">
+                <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
+                  <h1 className="font-display text-2xl font-bold mb-1">Mot de passe oublié</h1>
+                  <p className="text-sm text-muted-foreground mb-6">Saisissez votre email pour recevoir un lien de réinitialisation.</p>
+                  <form onSubmit={handleForgot} className="space-y-5">
+                    <div>
+                      <Label>Email <span className="text-destructive">*</span></Label>
+                      <Input type="email" placeholder="jean@entreprise.com" value={authEmail} onChange={e => setAuthEmail(e.target.value)}
+                        className={cn("mt-1.5 bg-background border-border", authSubmitted && !authEmail && "border-destructive ring-destructive/30 ring-2")} />
+                      {authSubmitted && !authEmail && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                    </div>
+                    <Button type="submit" className="w-full h-12 text-base font-bold" disabled={authLoading}>
+                      {authLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Envoyer le lien
+                    </Button>
+                    <button type="button" onClick={() => { setAuthView("login"); setAuthSubmitted(false); }}
+                      className="text-sm text-foreground hover:underline w-full text-center font-medium flex items-center justify-center gap-1">
+                      <ArrowLeft size={14} /> Retour connexion
+                    </button>
+                  </form>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
