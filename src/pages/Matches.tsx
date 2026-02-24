@@ -31,6 +31,7 @@ interface MatchItem {
   unread: boolean;
   lastMessage: string;
   price: string;
+  pricePerM2: string;
   priceTag: string;
   location: string;
   surface: string;
@@ -48,10 +49,10 @@ interface ChatMessage {
 
 // --- Mock data ---
 const mockMatches: MatchItem[] = [
-  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop" },
-  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true, image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop" },
-  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
-  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop" },
+  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", pricePerM2: "8 000 €/m²", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop" },
+  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", pricePerM2: "2 917 €/m²", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true, image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop" },
+  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", pricePerM2: "3 444 €/m²", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
+  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", pricePerM2: "60 €/m²", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop" },
 ];
 
 const mockMessagesByMatch: Record<number, ChatMessage[]> = {
@@ -474,8 +475,10 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
         {/* Price overlay */}
         <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
-          <span className="font-display text-lg font-bold text-foreground drop-shadow-lg">{match.price}</span>
-          <span className="text-primary font-bold text-sm drop-shadow-lg">{match.compatibility}%</span>
+          <div>
+            <span className="font-display text-lg font-bold text-foreground drop-shadow-lg">{match.price}</span>
+            <span className="text-xs text-muted-foreground ml-1.5 drop-shadow-lg">{match.pricePerM2}</span>
+          </div>
         </div>
         {/* Unread dot */}
         {match.unread && !isExpired && (
@@ -492,6 +495,7 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
           <Ruler size={10} /> {match.surface}
         </div>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
+          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
           <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
           <span className={`text-[10px] flex items-center gap-0.5 ${getTimerStyle(match.timerHours)}`}>
             {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={9} />}
@@ -534,8 +538,21 @@ function ConversationColumn({
         <div className="flex items-center gap-2 shrink-0">
           {showDetailsBtn && (
             <Button variant="outline" size="sm" className="text-xs h-7" onClick={onShowDetails}>
-              <Info size={12} className="mr-1" /> Détails
+              <Info size={12} className="mr-1" /> Détails de l'annonce
             </Button>
+          )}
+          {showDetailsBtn && (
+            selected.dataRoomAccess ? (
+              <Link to="/dataroom">
+                <Button variant="outline" size="sm" className="text-xs h-7">
+                  <FolderOpen size={12} className="mr-1" /> Data Room
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" className="text-xs h-7">
+                <Lock size={12} className="mr-1" /> Demander Data Room
+              </Button>
+            )
           )}
           <div className="flex items-center gap-2 bg-primary/15 border border-primary/40 text-primary rounded-lg px-3 py-1.5 animate-pulse-gold">
             <Clock size={14} />
