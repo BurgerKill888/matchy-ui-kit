@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
   Clock, Heart, MessageSquare, Send, Eye, AlertTriangle,
-  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X, Filter, ChevronDown, Check, ArrowUpDown, ArrowUp, ArrowDown
+  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X, Filter, ChevronDown, Check, ArrowUpDown, ArrowUp, ArrowDown, ImageIcon
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
@@ -549,7 +549,8 @@ function FilterPill({ active, onClick, label, muted }: { active: boolean; onClic
 function MatchListItem({ match, selected, onSelect }: { match: MatchItem; selected: boolean; onSelect: (id: number) => void }) {
   const isExpired = match.status === "expired";
   const st = statusConfig[match.status];
-  const typeColor = getTypeColor(match.type);
+  const timerUrgent = match.timerHours > 0 && match.timerHours < 24;
+  const isOffmarket = match.priceTag.includes("Off-market");
 
   return (
     <button
@@ -562,52 +563,55 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
             : "hover:bg-secondary/60"
       }`}
     >
-      {/* Image + overlay */}
-      <div className="relative h-28 w-full overflow-hidden">
-        <img
-          src={match.image}
-          alt={match.property}
-          className="w-full h-full object-cover"
-        />
-        {/* Type color strip */}
-        <div className="absolute top-0 left-0 right-0 h-1" style={{ backgroundColor: typeColor }} />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/30 to-transparent" />
-        {/* Price overlay */}
-        <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
-          <div>
-            <span className="font-display text-lg font-bold text-foreground drop-shadow-lg">{match.price}</span>
-            <span className="text-xs text-muted-foreground ml-1.5 drop-shadow-lg">{match.pricePerM2}</span>
+      <div className="flex">
+        {/* Image */}
+        <div className="relative w-[130px] min-h-[110px] shrink-0 overflow-hidden">
+          <img src={match.image} alt={match.property} className="w-full h-full object-cover" />
+          <div className="absolute bottom-1.5 right-1.5 bg-black/50 rounded px-1.5 py-0.5 text-[9px] text-white/70 flex items-center gap-0.5">
+            4 <ImageIcon size={9} />
+          </div>
+          {isExpired && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white/60 tracking-wider">EXPIRÉ</span>
+            </div>
+          )}
+          {/* Unread dot */}
+          {match.unread && !isExpired && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary animate-pulse-gold ring-2 ring-background" />
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-2.5 flex flex-col justify-center min-w-0">
+          {/* Price row */}
+          <div className="flex items-baseline gap-1.5 mb-0.5">
+            <span className="text-sm font-extrabold text-foreground truncate">
+              {isOffmarket ? "Confidentiel" : match.price}
+            </span>
+            {isOffmarket ? (
+              <span className="text-[10px] text-primary flex items-center gap-0.5"><Lock size={9} /> Off-market</span>
+            ) : (
+              <span className="text-[10px] text-primary">{match.priceTag}</span>
+            )}
+          </div>
+
+          {/* Title */}
+          <p className="text-xs font-semibold text-foreground truncate mb-0.5">{match.property}</p>
+
+          {/* Location + surface */}
+          <p className="text-[11px] text-muted-foreground truncate mb-1.5">
+            {match.location} · {match.surface}
+          </p>
+
+          {/* Footer: timer + closing */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant={st.variant} className="text-[9px] h-3.5 px-1">{st.label}</Badge>
+            <span className={`flex items-center gap-0.5 text-[10px] ${timerUrgent ? "text-warning" : "text-muted-foreground"}`}>
+              {timerUrgent ? <AlertTriangle size={9} /> : <Clock size={9} />} {match.timer}
+            </span>
+            <span className="text-[10px] font-bold text-primary ml-auto">Closing {match.compatibility}%</span>
           </div>
         </div>
-        {/* Unread dot */}
-        {match.unread && !isExpired && (
-          <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-primary animate-pulse-gold ring-2 ring-background" />
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="p-2.5 space-y-1">
-        <p className="font-semibold text-sm truncate">{match.property}</p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapPin size={10} /> <span className="truncate">{match.location}</span>
-          <span className="text-border">·</span>
-          <Ruler size={10} /> {match.surface}
-        </div>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
-          <span className={`text-[10px] flex items-center gap-0.5 ${getTimerStyle(match.timerHours)}`}>
-            {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={9} />}
-            <Clock size={9} /> {match.timer}
-          </span>
-        </div>
-        <div className="flex items-center gap-1 mt-1">
-          <span className="text-[10px] text-muted-foreground">Closing</span>
-          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
-        </div>
-        {match.lastMessage && (
-          <p className="text-[11px] text-muted-foreground truncate mt-0.5">{match.lastMessage}</p>
-        )}
       </div>
     </button>
   );
