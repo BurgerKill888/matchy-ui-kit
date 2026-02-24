@@ -1,4 +1,5 @@
 import AppLayout from "@/components/AppLayout";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -159,7 +160,7 @@ export default function Matches() {
                   <Info size={16} className="mr-1" /> Détails
                 </Button>
               </div>
-              <ConversationColumn selected={selected} messages={messages} message={message} setMessage={setMessage} onShowDetails={() => setMobileView("details")} showDetailsBtn={false} />
+              <ConversationColumn selected={selected} messages={messages} message={message} setMessage={setMessage} onShowDetails={() => setMobileView("details")} showDetailsBtn={false} isAcquereur={isAcquereur} />
             </motion.div>
           )}
           {mobileView === "details" && selected && (
@@ -199,7 +200,7 @@ export default function Matches() {
               selected={selected} messages={messages}
               message={message} setMessage={setMessage}
               onShowDetails={() => setDetailsSlideOpen(true)}
-              showDetailsBtn={isNarrow}
+              showDetailsBtn={isNarrow} isAcquereur={isAcquereur}
             />
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -294,7 +295,7 @@ function MatchListColumn({
   return (
     <>
       <div className="p-4 pb-2">
-        <h2 className="font-display text-lg font-semibold">Mes mises en relation</h2>
+        <h2 className="font-display text-lg font-semibold">Mes matches</h2>
       </div>
 
       {/* Filter buttons row */}
@@ -541,14 +542,15 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
 // CENTER COLUMN — Conversation
 // =====================
 function ConversationColumn({
-  selected, messages, message, setMessage, onShowDetails, showDetailsBtn,
+  selected, messages, message, setMessage, onShowDetails, showDetailsBtn, isAcquereur,
 }: {
   selected: MatchItem; messages: ChatMessage[];
   message: string; setMessage: (v: string) => void;
-  onShowDetails: () => void; showDetailsBtn: boolean;
+  onShowDetails: () => void; showDetailsBtn: boolean; isAcquereur: boolean;
 }) {
   const st = statusConfig[selected.status];
   const isNew = selected.status === "new" && messages.length === 0;
+  const [headerDataRoomOpen, setHeaderDataRoomOpen] = useState(false);
 
   return (
     <>
@@ -568,7 +570,7 @@ function ConversationColumn({
               <Info size={12} className="mr-1" /> Détails de l'annonce
             </Button>
           )}
-          {showDetailsBtn && (
+          {showDetailsBtn && isAcquereur && (
             selected.dataRoomAccess ? (
               <Link to="/dataroom">
                 <Button variant="outline" size="sm" className="text-xs h-7">
@@ -576,9 +578,12 @@ function ConversationColumn({
                 </Button>
               </Link>
             ) : (
-              <Button variant="outline" size="sm" className="text-xs h-7">
-                <Lock size={12} className="mr-1" /> Demander Data Room
-              </Button>
+              <>
+                <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setHeaderDataRoomOpen(true)}>
+                  <Lock size={12} className="mr-1" /> Demander Data Room
+                </Button>
+                <DataRoomRequestModal open={headerDataRoomOpen} onOpenChange={setHeaderDataRoomOpen} propertyName={selected.property} />
+              </>
             )
           )}
           <div className="flex items-center gap-2 bg-primary/15 border border-primary/40 text-primary rounded-lg px-3 py-1.5 animate-pulse-gold">
@@ -640,6 +645,7 @@ function ConversationColumn({
 // =====================
 function PropertyDetailColumn({ selected, isAcquereur }: { selected: MatchItem; isAcquereur: boolean }) {
   const typeColor = getTypeColor(selected.type);
+  const [dataRoomConfirmOpen, setDataRoomConfirmOpen] = useState(false);
 
   return (
     <div className="p-4 space-y-4">
@@ -701,12 +707,60 @@ function PropertyDetailColumn({ selected, isAcquereur }: { selected: MatchItem; 
               </Button>
             </Link>
           ) : (
-            <Button variant="outline" size="sm" className="w-full text-xs">
-              <Lock size={12} className="mr-1.5" /> Demander accès Data Room
-            </Button>
+            <>
+              <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => setDataRoomConfirmOpen(true)}>
+                <Lock size={12} className="mr-1.5" /> Demander accès Data Room
+              </Button>
+              <DataRoomRequestModal open={dataRoomConfirmOpen} onOpenChange={setDataRoomConfirmOpen} propertyName={selected.property} />
+            </>
           )
         )}
       </div>
     </div>
+  );
+}
+
+// =====================
+// DATA ROOM REQUEST MODAL
+// =====================
+function DataRoomRequestModal({ open, onOpenChange, propertyName }: { open: boolean; onOpenChange: (v: boolean) => void; propertyName: string }) {
+  const [sent, setSent] = useState(false);
+
+  function handleConfirm() {
+    setSent(true);
+    setTimeout(() => {
+      setSent(false);
+      onOpenChange(false);
+    }, 1800);
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!sent) onOpenChange(v); }}>
+      <DialogContent className="sm:max-w-sm bg-card border-border">
+        <div className="flex flex-col items-center py-4 text-center">
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            {sent ? <Check size={24} className="text-primary" /> : <FolderOpen size={24} className="text-primary" />}
+          </div>
+          <DialogTitle className="font-display text-xl mb-2">
+            {sent ? "Demande envoyée !" : "Demander accès à la Data Room"}
+          </DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            {sent
+              ? "Le vendeur a été notifié. Vous recevrez une notification dès que l'accès sera accordé."
+              : `Confirmez votre demande d'accès aux documents confidentiels pour "${propertyName}".`}
+          </DialogDescription>
+        </div>
+        {!sent && (
+          <DialogFooter className="flex-col gap-2">
+            <Button className="w-full glow-gold" onClick={handleConfirm}>
+              Confirmer la demande
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
+              Annuler
+            </Button>
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
