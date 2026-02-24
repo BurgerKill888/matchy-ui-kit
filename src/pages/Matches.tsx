@@ -16,6 +16,7 @@ import EmptyState from "@/components/EmptyState";
 import { Link } from "react-router-dom";
 import { getTypeColor, typeColors } from "@/lib/propertyTypes";
 import { motion, AnimatePresence } from "framer-motion";
+import { NewMatchModal, StartConversationModal, DeclineMatchModal } from "@/components/modals/MatchActionModals";
 
 // --- Types ---
 type Status = "new" | "in_conversation" | "offer_sent" | "expired";
@@ -114,6 +115,33 @@ export default function Matches() {
   const [mobileView, setMobileView] = useState<"list" | "chat" | "details">("list");
   const [detailsSlideOpen, setDetailsSlideOpen] = useState(false);
 
+  // --- Match action modals (seller) ---
+  const [newMatchModalOpen, setNewMatchModalOpen] = useState(false);
+  const [startConvoModalOpen, setStartConvoModalOpen] = useState(false);
+  const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  const [actionMatchId, setActionMatchId] = useState<number | null>(null);
+
+  const actionMatch = mockMatches.find((m) => m.id === actionMatchId) ?? null;
+  const actionMatchInfo = actionMatch ? {
+    property: actionMatch.property,
+    surface: actionMatch.surface,
+    price: actionMatch.price,
+    condition: actionMatch.condition,
+    counterpart: actionMatch.counterpart,
+    counterpartRole: "Marchand de biens",
+    counterpartBudget: "2 000 000 € – 3 500 000 €",
+    compatibility: actionMatch.compatibility,
+    timerHours: actionMatch.timerHours,
+    timerMinutes: 59,
+    criteria: [
+      { label: "Budget", compatible: true },
+      { label: "Surface", compatible: true },
+      { label: "Typologie", compatible: true },
+      { label: "Localisation", compatible: true },
+      { label: "État du bien", compatible: false },
+    ],
+  } : null;
+
   const counts = pipelineSteps.reduce((acc, s) => {
     acc[s.key] = mockMatches.filter((m) => m.status === s.key).length;
     return acc;
@@ -132,8 +160,39 @@ export default function Matches() {
   const messages = selectedId ? (mockMessagesByMatch[selectedId] ?? []) : [];
 
   function selectMatch(id: number) {
+    const match = mockMatches.find((m) => m.id === id);
+    // Seller clicking a new match → show modal instead of chat
+    if (isVendeur && match?.status === "new" && (mockMessagesByMatch[id] ?? []).length === 0) {
+      setActionMatchId(id);
+      setNewMatchModalOpen(true);
+      return;
+    }
     setSelectedId(id);
     if (isMobile) setMobileView("chat");
+  }
+
+  function handleAcceptMatch() {
+    setNewMatchModalOpen(false);
+    setStartConvoModalOpen(true);
+  }
+
+  function handleDeclineMatch() {
+    setNewMatchModalOpen(false);
+    setDeclineModalOpen(true);
+  }
+
+  function handleSendFirstMessage(msg: string) {
+    setStartConvoModalOpen(false);
+    if (actionMatchId) {
+      setSelectedId(actionMatchId);
+      if (isMobile) setMobileView("chat");
+    }
+    setActionMatchId(null);
+  }
+
+  function handleConfirmDecline(reason: string) {
+    setDeclineModalOpen(false);
+    setActionMatchId(null);
   }
 
   // --- Mobile navigation ---
@@ -174,6 +233,14 @@ export default function Matches() {
             </motion.div>
           )}
         </AnimatePresence>
+        {/* Match action modals */}
+        {actionMatchInfo && (
+          <>
+            <NewMatchModal open={newMatchModalOpen} onOpenChange={setNewMatchModalOpen} match={actionMatchInfo} onAccept={handleAcceptMatch} onDecline={handleDeclineMatch} />
+            <StartConversationModal open={startConvoModalOpen} onOpenChange={setStartConvoModalOpen} match={actionMatchInfo} onSend={handleSendFirstMessage} />
+            <DeclineMatchModal open={declineModalOpen} onOpenChange={setDeclineModalOpen} match={actionMatchInfo} onConfirmDecline={handleConfirmDecline} />
+          </>
+        )}
       </AppLayout>
     );
   }
@@ -248,6 +315,14 @@ export default function Matches() {
           )}
         </AnimatePresence>
       </div>
+      {/* Match action modals */}
+      {actionMatchInfo && (
+        <>
+          <NewMatchModal open={newMatchModalOpen} onOpenChange={setNewMatchModalOpen} match={actionMatchInfo} onAccept={handleAcceptMatch} onDecline={handleDeclineMatch} />
+          <StartConversationModal open={startConvoModalOpen} onOpenChange={setStartConvoModalOpen} match={actionMatchInfo} onSend={handleSendFirstMessage} />
+          <DeclineMatchModal open={declineModalOpen} onOpenChange={setDeclineModalOpen} match={actionMatchInfo} onConfirmDecline={handleConfirmDecline} />
+        </>
+      )}
     </AppLayout>
   );
 }
