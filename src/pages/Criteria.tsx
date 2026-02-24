@@ -1,11 +1,12 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit } from "lucide-react";
+import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
+import { DeleteContentModal, ContentDeletedModal } from "@/components/modals/SystemModals";
 
 const dpeColors: Record<string, string> = {
   A: "#00A550",
@@ -83,6 +84,19 @@ function DpeBadge({ label }: { label: string }) {
 export default function CriteriaPage() {
   const [typeFilter, setTypeFilter] = useState("Tous");
   const [statusFilter, setStatusFilter] = useState("Tous");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<typeof mockCriteria[0] | null>(null);
+
+  function handleDeleteClick(item: typeof mockCriteria[0]) {
+    setDeleteTarget(item);
+    setDeleteModalOpen(true);
+  }
+
+  function handleConfirmDelete() {
+    setDeleteModalOpen(false);
+    setDeleteDoneOpen(true);
+  }
 
   const types = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison"];
   const statuses = ["Tous", "Active", "Brouillon"];
@@ -166,11 +180,16 @@ export default function CriteriaPage() {
                       </div>
                       <h3 className="font-semibold text-sm group-hover:text-primary transition-colors leading-snug">{item.title}</h3>
                     </div>
-                    <Link to={`/criteria/create`}>
-                      <Button size="sm" variant="outline" className="shrink-0 ml-3 text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
-                        <Edit size={12} className="mr-1" /> Modifier
+                    <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                      <Link to={`/criteria/create`}>
+                        <Button size="sm" variant="outline" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
+                          <Edit size={12} className="mr-1" /> Modifier
+                        </Button>
+                      </Link>
+                      <Button size="sm" variant="outline" className="text-xs h-7 border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteClick(item)}>
+                        <Trash2 size={12} />
                       </Button>
-                    </Link>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-3">
@@ -207,6 +226,25 @@ export default function CriteriaPage() {
           </div>
         )}
       </div>
+
+      {/* Delete modals */}
+      {deleteTarget && (
+        <>
+          <DeleteContentModal
+            open={deleteModalOpen}
+            onOpenChange={setDeleteModalOpen}
+            contentType="fiche"
+            contentTitle={deleteTarget.title}
+            contentSubtitle={`Budget : ${deleteTarget.budgetMin} – ${deleteTarget.budgetMax}`}
+            onConfirm={handleConfirmDelete}
+          />
+          <ContentDeletedModal
+            open={deleteDoneOpen}
+            onOpenChange={setDeleteDoneOpen}
+            contentType="fiche"
+          />
+        </>
+      )}
     </AppLayout>
   );
 }

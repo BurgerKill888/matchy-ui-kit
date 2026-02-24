@@ -1,12 +1,13 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Pencil, Images, Zap } from "lucide-react";
+import { Plus, Eye, MapPin, Euro, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Pencil, Images, Zap, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import { getTypeColor, typeColors } from "@/lib/propertyTypes";
+import { DeleteContentModal, ContentDeletedModal } from "@/components/modals/SystemModals";
 
 const typeList = [
   "Tous",
@@ -95,8 +96,23 @@ interface ListingsPageProps {
 
 export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
   const [typeFilter, setTypeFilter] = useState("Tous");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<typeof mockListings[0] | null>(null);
 
   const filtered = typeFilter === "Tous" ? mockListings : mockListings.filter((l) => l.type === typeFilter);
+
+  function handleDeleteClick(e: React.MouseEvent, item: typeof mockListings[0]) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDeleteTarget(item);
+    setDeleteModalOpen(true);
+  }
+
+  function handleConfirmDelete() {
+    setDeleteModalOpen(false);
+    setDeleteDoneOpen(true);
+  }
 
   return (
     <AppLayout>
@@ -188,13 +204,22 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                               {item.viewsTrend}
                             </span>
                           )}
-                          <button
+                    <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                             className="w-6 h-6 rounded-md bg-secondary/60 hover:bg-secondary flex items-center justify-center transition-colors"
                             title="Modifier l'annonce"
                           >
                             <Pencil size={11} className="text-muted-foreground hover:text-foreground" />
                           </button>
+                          {mode !== "catalog" && (
+                            <button
+                              onClick={(e) => handleDeleteClick(e, item)}
+                              className="w-6 h-6 rounded-md bg-destructive/10 hover:bg-destructive/20 flex items-center justify-center transition-colors"
+                              title="Supprimer l'annonce"
+                            >
+                              <Trash2 size={11} className="text-destructive" />
+                            </button>
+                          )}
                         </div>
 
                         {/* Matches — prominent right badge */}
@@ -241,6 +266,26 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
           </div>
         )}
       </div>
+
+      {/* Delete modals */}
+      {deleteTarget && (
+        <>
+          <DeleteContentModal
+            open={deleteModalOpen}
+            onOpenChange={setDeleteModalOpen}
+            contentType="annonce"
+            contentTitle={deleteTarget.title}
+            contentSubtitle={`${deleteTarget.surface} · ${deleteTarget.price} · ${deleteTarget.location}`}
+            onConfirm={handleConfirmDelete}
+            onPause={() => setDeleteModalOpen(false)}
+          />
+          <ContentDeletedModal
+            open={deleteDoneOpen}
+            onOpenChange={setDeleteDoneOpen}
+            contentType="annonce"
+          />
+        </>
+      )}
     </AppLayout>
   );
 }
