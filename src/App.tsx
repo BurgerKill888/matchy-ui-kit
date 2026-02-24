@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
+import DataRoomModalsDemo from "./pages/DataRoomModalsDemo";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/acquereur-dataroom" element={<AcquereurDataRoom />} />
             <Route path="/dataroom" element={<DataRoom />} />
             <Route path="/dataroom/:id" element={<DataRoom />} />
+            <Route path="/dataroom-modals" element={<DataRoomModalsDemo />} />
             <Route path="/messaging" element={<Navigate to="/matches" replace />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
