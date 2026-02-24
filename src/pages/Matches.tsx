@@ -674,13 +674,9 @@ function PropertyDetailColumn({ selected, isAcquereur }: { selected: MatchItem; 
         <div className="flex items-center gap-2 text-muted-foreground">
           <Ruler size={13} /> {selected.surface}
         </div>
-        <p className="text-muted-foreground">{selected.condition}</p>
-      </div>
-
-      {/* Compatibility */}
-      <div className="glass-card rounded-lg p-3 text-center">
-        <span className="text-2xl font-bold text-primary">{selected.compatibility}%</span>
-        <p className="text-xs text-muted-foreground mt-0.5">compatible</p>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Heart size={13} className="text-primary" /> <span>Closing <span className="font-semibold text-foreground">{selected.compatibility}%</span></span>
+        </div>
       </div>
 
       {/* Map placeholder */}
