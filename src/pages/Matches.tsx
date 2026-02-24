@@ -1,27 +1,81 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Heart, ArrowRight, MessageSquare, Building2, AlertTriangle, Eye, Send } from "lucide-react";
-import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Clock, Heart, MessageSquare, Send, Eye, AlertTriangle,
+  MapPin, Ruler, Euro, FolderOpen, Lock, Info, X
+} from "lucide-react";
+import { useState, useEffect } from "react";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import EmptyState from "@/components/EmptyState";
+import { Link } from "react-router-dom";
+import { getTypeColor } from "@/lib/propertyTypes";
+import { motion, AnimatePresence } from "framer-motion";
 
-const mockMatches = [
-  { id: 1, label: "Bureau 350m² Paris 8e", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new" as const },
-  { id: 2, label: "Immeuble mixte Lyon 6e", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation" as const },
-  { id: 3, label: "Terrain 2ha Bordeaux", counterpart: "Nexity Régions", timer: "0j 18h", timerHours: 18, compatibility: 78, status: "offer_sent" as const },
-  { id: 4, label: "Local commercial Marseille", counterpart: "Cabinet Martin", timer: "0j 00h", timerHours: 0, compatibility: 88, status: "expired" as const },
-];
-
+// --- Types ---
 type Status = "new" | "in_conversation" | "offer_sent" | "expired";
 
-const statusConfig: Record<Status, { label: string; variant: "default" | "secondary" | "outline"; ctaLabel: string; ctaIcon: React.ElementType; disabled?: boolean }> = {
-  new: { label: "Nouveau", variant: "default", ctaLabel: "Découvrir", ctaIcon: Eye },
-  in_conversation: { label: "En conversation", variant: "secondary", ctaLabel: "Converser", ctaIcon: MessageSquare },
-  offer_sent: { label: "Offre envoyée", variant: "outline", ctaLabel: "Suivre", ctaIcon: Send },
-  expired: { label: "Expiré", variant: "secondary", ctaLabel: "Expiré", ctaIcon: Clock, disabled: true },
+interface MatchItem {
+  id: number;
+  property: string;
+  type: string;
+  counterpart: string;
+  timer: string;
+  timerHours: number;
+  compatibility: number;
+  status: Status;
+  unread: boolean;
+  lastMessage: string;
+  price: string;
+  priceTag: string;
+  location: string;
+  surface: string;
+  condition: string;
+  dataRoomAccess: boolean;
+}
+
+interface ChatMessage {
+  id: number;
+  from: "me" | "them" | "system";
+  text: string;
+  time: string;
+}
+
+// --- Mock data ---
+const mockMatches: MatchItem[] = [
+  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false },
+  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true },
+  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false },
+  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false },
+];
+
+const mockMessagesByMatch: Record<number, ChatMessage[]> = {
+  1: [],
+  2: [
+    { id: 1, from: "them", text: "Bonjour, nous sommes intéressés par votre immeuble mixte. Quelles sont les conditions ?", time: "14:30" },
+    { id: 2, from: "me", text: "Bonjour, merci pour votre intérêt. Le bien est disponible immédiatement. Souhaitez-vous planifier une visite ?", time: "14:45" },
+    { id: 3, from: "them", text: "Documents reçus, merci.", time: "15:02" },
+  ],
+  3: [
+    { id: 1, from: "them", text: "Bonjour, ce local nous intéresse fortement.", time: "10:00" },
+    { id: 2, from: "me", text: "Merci, je vous envoie une offre formelle.", time: "10:30" },
+    { id: 3, from: "me", text: "Offre envoyée.", time: "11:00" },
+  ],
+  4: [
+    { id: 1, from: "them", text: "Le terrain est-il toujours disponible ?", time: "09:00" },
+    { id: 2, from: "system", text: "Le délai de mise en relation a expiré.", time: "09:00" },
+  ],
+};
+
+const statusConfig: Record<Status, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  new: { label: "Nouveau", variant: "default" },
+  in_conversation: { label: "En conversation", variant: "secondary" },
+  offer_sent: { label: "Offre envoyée", variant: "outline" },
+  expired: { label: "Expiré", variant: "secondary" },
 };
 
 const pipelineSteps: { key: Status; label: string }[] = [
@@ -31,6 +85,7 @@ const pipelineSteps: { key: Status; label: string }[] = [
   { key: "expired", label: "Expiré" },
 ];
 
+// --- Helpers ---
 function getTimerStyle(hours: number) {
   if (hours <= 0) return "text-muted-foreground";
   if (hours < 24) return "text-destructive";
@@ -38,9 +93,19 @@ function getTimerStyle(hours: number) {
   return "text-muted-foreground";
 }
 
+// =====================
+// MAIN COMPONENT
+// =====================
 export default function Matches() {
   const { isVendeur, isAcquereur } = useUserSpace();
+  const isMobile = useIsMobile();
+  const isNarrow = useIsNarrow();
+
   const [filter, setFilter] = useState<Status | "all">("all");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [message, setMessage] = useState("");
+  const [mobileView, setMobileView] = useState<"list" | "chat" | "details">("list");
+  const [detailsSlideOpen, setDetailsSlideOpen] = useState(false);
 
   const counts = pipelineSteps.reduce((acc, s) => {
     acc[s.key] = mockMatches.filter((m) => m.status === s.key).length;
@@ -50,144 +115,426 @@ export default function Matches() {
   const filtered = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
   const active = filtered.filter((m) => m.status !== "expired");
   const expired = filtered.filter((m) => m.status === "expired");
+  const selected = mockMatches.find((m) => m.id === selectedId) ?? null;
+  const messages = selectedId ? (mockMessagesByMatch[selectedId] ?? []) : [];
 
+  function selectMatch(id: number) {
+    setSelectedId(id);
+    if (isMobile) setMobileView("chat");
+  }
+
+  // --- Mobile navigation ---
+  if (isMobile) {
+    return (
+      <AppLayout>
+        <AnimatePresence mode="wait">
+          {mobileView === "list" && (
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+              <MatchListColumn
+                filter={filter} setFilter={setFilter} counts={counts}
+                active={active} expired={expired} selectedId={selectedId}
+                onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
+              />
+            </motion.div>
+          )}
+          {mobileView === "chat" && selected && (
+            <motion.div key="chat" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+              <div className="p-2 border-b border-border flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setMobileView("list")}>← Retour</Button>
+                <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setMobileView("details")}>
+                  <Info size={16} className="mr-1" /> Détails
+                </Button>
+              </div>
+              <ConversationColumn selected={selected} messages={messages} message={message} setMessage={setMessage} onShowDetails={() => setMobileView("details")} showDetailsBtn={false} />
+            </motion.div>
+          )}
+          {mobileView === "details" && selected && (
+            <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+              <div className="p-2 border-b border-border">
+                <Button variant="ghost" size="sm" onClick={() => setMobileView("chat")}>← Conversation</Button>
+              </div>
+              <ScrollArea className="flex-1">
+                <PropertyDetailColumn selected={selected} isAcquereur={isAcquereur} />
+              </ScrollArea>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </AppLayout>
+    );
+  }
+
+  // --- Desktop 3-column / 2-column ---
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-4xl space-y-6">
-        <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold">Mes mises en relation en cours</h1>
-          <p className="text-muted-foreground mt-1">
-            {isVendeur
-              ? "Suivez vos échanges avec les acquéreurs intéressés"
-              : "Suivez vos échanges avec les vendeurs compatibles"}
-          </p>
-        </div>
-
-        {/* Pipeline */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
-              filter === "all" ? "bg-primary text-primary-foreground border-primary glow-gold" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-            }`}
-          >
-            Tous ({mockMatches.length})
-          </button>
-          {pipelineSteps.map((step) => (
-            <button
-              key={step.key}
-              onClick={() => setFilter(step.key)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
-                filter === step.key
-                  ? step.key === "expired"
-                    ? "bg-muted text-muted-foreground border-border"
-                    : "bg-primary text-primary-foreground border-primary glow-gold"
-                  : step.key === "expired"
-                  ? "border-border text-muted-foreground/50 hover:text-muted-foreground"
-                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-              }`}
-            >
-              {step.label} ({counts[step.key]})
-            </button>
-          ))}
-        </div>
-
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={Heart}
-            title="Aucune mise en relation pour le moment"
-            subtitle={isVendeur
-              ? "Vos annonces sont en ligne, les matches arriveront bientôt."
-              : "Complétez vos fiches de recherche ou découvrez de nouvelles opportunités."}
-            ctaLabel={isAcquereur ? "Découvrir" : undefined}
-            ctaHref={isAcquereur ? "/discovery" : undefined}
+      <div className="flex h-[calc(100vh-4rem)]">
+        {/* Left column — match list */}
+        <div className="w-72 xl:w-80 border-r border-border flex flex-col shrink-0">
+          <MatchListColumn
+            filter={filter} setFilter={setFilter} counts={counts}
+            active={active} expired={expired} selectedId={selectedId}
+            onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
           />
-        ) : (
-          <>
-            {/* Active */}
-            <div className="space-y-3">
-              {active.map((match, i) => {
-                const st = statusConfig[match.status];
-                const timerColor = getTimerStyle(match.timerHours);
-                return (
-                  <motion.div
-                    key={match.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <Building2 className="text-primary" size={24} />
-                          {match.status === "new" && (
-                            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-primary glow-gold" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-display font-semibold">{match.label}</p>
-                          <p className="text-sm text-muted-foreground">{match.counterpart}</p>
-                          <div className="flex items-center gap-3 mt-1.5">
-                            <span className={`text-xs flex items-center gap-1 font-medium ${timerColor}`}>
-                              {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={10} />}
-                              <Clock size={11} /> {match.timer}
-                            </span>
-                            <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
-                            <Badge variant={st.variant} className="text-[10px] h-5">
-                              {st.label}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
+        </div>
 
-                      {/* Action buttons — for acquéreur, show both "Converser" + "Voir l'annonce" */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        <Link to={`/listings/${match.id}`}>
-                          <Button size="sm" variant="outline" className="text-xs transition-transform duration-200 hover:scale-[1.02]">
-                            Voir l'annonce
-                          </Button>
-                        </Link>
-                        <Link to="/messaging">
-                          <Button
-                            size="sm"
-                            className={`transition-transform duration-200 hover:scale-[1.02] ${match.status === "new" ? "glow-gold" : ""}`}
-                            variant={match.status === "new" ? "default" : "outline"}
-                          >
-                            <MessageSquare size={13} className="mr-1" />
-                            Converser
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+        {/* Center — conversation */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {selected ? (
+            <ConversationColumn
+              selected={selected} messages={messages}
+              message={message} setMessage={setMessage}
+              onShowDetails={() => setDetailsSlideOpen(true)}
+              showDetailsBtn={isNarrow}
+            />
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <EmptyState
+                icon={MessageSquare}
+                title="Sélectionnez un match"
+                subtitle="Cliquez sur un match pour démarrer ou poursuivre un échange."
+              />
             </div>
+          )}
+        </div>
 
-            {/* Expired */}
-            {expired.length > 0 && (
-              <div>
-                <h2 className="font-display text-lg font-semibold mb-3 text-muted-foreground">Expirés</h2>
-                <div className="space-y-2">
-                  {expired.map((match) => (
-                    <div key={match.id} className="glass-card rounded-xl p-4 flex items-center justify-between opacity-50">
-                      <div className="flex items-center gap-3">
-                        <Heart className="text-muted-foreground" size={18} />
-                        <div>
-                          <p className="font-medium text-sm">{match.label}</p>
-                          <p className="text-xs text-muted-foreground">{match.counterpart}</p>
-                        </div>
-                      </div>
-                      <Button size="sm" variant="secondary" disabled className="text-xs">Expiré</Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
+        {/* Right column — property details (hidden on narrow) */}
+        {!isNarrow && selected && (
+          <div className="w-80 border-l border-border shrink-0">
+            <ScrollArea className="h-full">
+              <PropertyDetailColumn selected={selected} isAcquereur={isAcquereur} />
+            </ScrollArea>
+          </div>
         )}
+
+        {/* Slide-over for narrow screens */}
+        <AnimatePresence>
+          {isNarrow && detailsSlideOpen && selected && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40 bg-background/60"
+                onClick={() => setDetailsSlideOpen(false)}
+              />
+              <motion.div
+                initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+                transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+                className="fixed right-0 top-16 bottom-0 z-50 w-80 bg-card border-l border-border shadow-elevated"
+              >
+                <div className="p-3 border-b border-border flex items-center justify-between">
+                  <span className="text-sm font-semibold">Détails de l'annonce</span>
+                  <Button variant="ghost" size="icon" onClick={() => setDetailsSlideOpen(false)}><X size={16} /></Button>
+                </div>
+                <ScrollArea className="h-[calc(100%-3.5rem)]">
+                  <PropertyDetailColumn selected={selected} isAcquereur={isAcquereur} />
+                </ScrollArea>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
+  );
+}
+
+// =====================
+// HOOK: narrow screen (no right column)
+// =====================
+function useIsNarrow() {
+  const [narrow, setNarrow] = useState(window.innerWidth < 1400);
+  useEffect(() => {
+    const handler = () => setNarrow(window.innerWidth < 1400);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+  return narrow;
+}
+
+// =====================
+// LEFT COLUMN — Match list
+// =====================
+function MatchListColumn({
+  filter, setFilter, counts, active, expired, selectedId, onSelect, filtered, isAcquereur,
+}: {
+  filter: Status | "all"; setFilter: (f: Status | "all") => void;
+  counts: Record<Status, number>; active: MatchItem[]; expired: MatchItem[];
+  selectedId: number | null; onSelect: (id: number) => void;
+  filtered: MatchItem[]; isAcquereur: boolean;
+}) {
+  return (
+    <>
+      <div className="p-4 pb-2">
+        <h2 className="font-display text-lg font-semibold">Mes mises en relation</h2>
+      </div>
+
+      {/* Pipeline filters */}
+      <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+        <FilterPill active={filter === "all"} onClick={() => setFilter("all")} label={`Tous (${mockMatches.length})`} />
+        {pipelineSteps.map((step) => (
+          <FilterPill
+            key={step.key}
+            active={filter === step.key}
+            onClick={() => setFilter(step.key)}
+            label={`${step.label} (${counts[step.key]})`}
+            muted={step.key === "expired"}
+          />
+        ))}
+      </div>
+
+      <ScrollArea className="flex-1">
+        {filtered.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={Heart}
+              title="Aucune mise en relation"
+              subtitle="Vos matches apparaîtront ici."
+              ctaLabel={isAcquereur ? "Découvrir" : undefined}
+              ctaHref={isAcquereur ? "/discovery" : undefined}
+            />
+          </div>
+        ) : (
+          <div className="px-2 pb-2 space-y-0.5">
+            {active.map((m) => (
+              <MatchListItem key={m.id} match={m} selected={selectedId === m.id} onSelect={onSelect} />
+            ))}
+
+            {expired.length > 0 && (
+              <>
+                <Separator className="my-2" />
+                <p className="px-2 text-xs text-muted-foreground font-semibold mb-1">Expirés</p>
+                {expired.map((m) => (
+                  <MatchListItem key={m.id} match={m} selected={selectedId === m.id} onSelect={onSelect} />
+                ))}
+              </>
+            )}
+          </div>
+        )}
+      </ScrollArea>
+    </>
+  );
+}
+
+function FilterPill({ active, onClick, label, muted }: { active: boolean; onClick: () => void; label: string; muted?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-all duration-200 ${
+        active
+          ? muted
+            ? "bg-muted text-muted-foreground border-border"
+            : "bg-primary text-primary-foreground border-primary glow-gold"
+          : muted
+            ? "border-border text-muted-foreground/50 hover:text-muted-foreground"
+            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function MatchListItem({ match, selected, onSelect }: { match: MatchItem; selected: boolean; onSelect: (id: number) => void }) {
+  const isExpired = match.status === "expired";
+  const st = statusConfig[match.status];
+  const typeColor = getTypeColor(match.type);
+
+  return (
+    <button
+      onClick={() => onSelect(match.id)}
+      className={`w-full text-left p-3 rounded-lg transition-all duration-200 flex gap-2.5 ${
+        selected
+          ? "bg-primary/10 border border-primary/30"
+          : isExpired
+            ? "opacity-50 hover:bg-secondary/50"
+            : "hover:bg-secondary"
+      }`}
+    >
+      {/* Type color bar */}
+      <div className="w-1 rounded-full shrink-0 self-stretch" style={{ backgroundColor: typeColor }} />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-1">
+          <span className="font-semibold text-sm truncate">{match.property}</span>
+          {match.unread && !isExpired && <span className="w-2 h-2 rounded-full bg-primary animate-pulse-gold shrink-0" />}
+        </div>
+        <p className="text-xs text-muted-foreground truncate mt-0.5">{match.counterpart}</p>
+
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span className="text-xs font-bold text-primary">{match.compatibility}%</span>
+          <span className={`text-[10px] flex items-center gap-0.5 ${getTimerStyle(match.timerHours)}`}>
+            {match.timerHours > 0 && match.timerHours < 24 && <AlertTriangle size={9} />}
+            <Clock size={9} /> {match.timer}
+          </span>
+          <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
+        </div>
+
+        {match.lastMessage && (
+          <p className="text-[11px] text-muted-foreground truncate mt-1">{match.lastMessage}</p>
+        )}
+      </div>
+    </button>
+  );
+}
+
+// =====================
+// CENTER COLUMN — Conversation
+// =====================
+function ConversationColumn({
+  selected, messages, message, setMessage, onShowDetails, showDetailsBtn,
+}: {
+  selected: MatchItem; messages: ChatMessage[];
+  message: string; setMessage: (v: string) => void;
+  onShowDetails: () => void; showDetailsBtn: boolean;
+}) {
+  const st = statusConfig[selected.status];
+  const isNew = selected.status === "new" && messages.length === 0;
+
+  return (
+    <>
+      {/* Header */}
+      <div className="border-b border-border p-4 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <div>
+            <p className="font-semibold text-sm">{selected.counterpart}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {showDetailsBtn && (
+            <Button variant="outline" size="sm" className="text-xs h-7" onClick={onShowDetails}>
+              <Info size={12} className="mr-1" /> Détails
+            </Button>
+          )}
+          <div className="flex items-center gap-2 bg-primary/15 border border-primary/40 text-primary rounded-lg px-3 py-1.5 animate-pulse-gold">
+            <Clock size={14} />
+            <span className="font-bold text-sm tracking-wide">{selected.timer}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <ScrollArea className="flex-1">
+        <div className="p-4 space-y-3">
+          {isNew && (
+            <div className="text-center py-8 space-y-2">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                <Heart className="text-primary" size={24} />
+              </div>
+              <p className="font-display text-lg font-semibold">Nouveau match !</p>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                Envoyez un premier message pour démarrer l'échange.
+              </p>
+            </div>
+          )}
+
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : msg.from === "system" ? "justify-center" : "justify-start"}`}>
+              {msg.from === "system" ? (
+                <p className="text-xs text-muted-foreground italic bg-secondary/50 rounded-lg px-3 py-1.5">{msg.text}</p>
+              ) : (
+                <div className={`max-w-[70%] rounded-xl px-4 py-2.5 ${
+                  msg.from === "me" ? "bg-primary text-primary-foreground" : "glass-card"
+                }`}>
+                  <p className="text-sm">{msg.text}</p>
+                  <p className={`text-xs mt-1 ${msg.from === "me" ? "text-primary-foreground/60" : "text-muted-foreground"}`}>{msg.time}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+
+      {/* Input */}
+      {selected.status !== "expired" && (
+        <div className="border-t border-border p-4 shrink-0">
+          <div className="flex gap-2">
+            <Input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Votre message..." className="bg-secondary border-border" />
+            <Button size="icon" className="shrink-0">
+              <Send size={16} />
+            </Button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// =====================
+// RIGHT COLUMN — Property details
+// =====================
+function PropertyDetailColumn({ selected, isAcquereur }: { selected: MatchItem; isAcquereur: boolean }) {
+  const typeColor = getTypeColor(selected.type);
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Property image placeholder */}
+      <div className="rounded-xl overflow-hidden">
+        <div className="h-2 w-full" style={{ backgroundColor: typeColor }} />
+        <div className="h-36 bg-secondary flex items-center justify-center">
+          <span className="text-muted-foreground text-xs">Image du bien</span>
+        </div>
+      </div>
+
+      {/* Type badge */}
+      <Badge className="text-[11px]" style={{ backgroundColor: typeColor, color: "#fff", borderColor: typeColor }}>
+        {selected.type}
+      </Badge>
+
+      <h3 className="font-display text-base font-semibold">{selected.property}</h3>
+
+      {/* Price tag */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="flex items-center gap-1 text-sm font-bold">
+          <Euro size={13} /> {selected.price}
+        </span>
+        <Badge variant="outline" className="text-[10px] h-5">{selected.priceTag}</Badge>
+      </div>
+
+      {/* Details */}
+      <div className="space-y-2 text-sm">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <MapPin size={13} /> {selected.location}
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Ruler size={13} /> {selected.surface}
+        </div>
+        <p className="text-muted-foreground">{selected.condition}</p>
+      </div>
+
+      {/* Compatibility */}
+      <div className="glass-card rounded-lg p-3 text-center">
+        <span className="text-2xl font-bold text-primary">{selected.compatibility}%</span>
+        <p className="text-xs text-muted-foreground mt-0.5">compatible</p>
+      </div>
+
+      {/* Map placeholder */}
+      <div className="rounded-xl bg-secondary h-28 flex items-center justify-center relative overflow-hidden">
+        <MapPin size={20} className="text-primary" />
+        <span className="absolute bottom-2 text-[10px] text-muted-foreground">Carte</span>
+      </div>
+
+      {/* Action buttons */}
+      <div className="space-y-2">
+        <Link to={`/listings/${selected.id}`} className="block">
+          <Button variant="outline" size="sm" className="w-full text-xs">
+            <Eye size={12} className="mr-1.5" /> Voir l'annonce complète
+          </Button>
+        </Link>
+
+        {isAcquereur && (
+          selected.dataRoomAccess ? (
+            <Link to="/dataroom" className="block">
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                <FolderOpen size={12} className="mr-1.5" /> Accéder à la Data Room
+              </Button>
+            </Link>
+          ) : (
+            <Button variant="outline" size="sm" className="w-full text-xs">
+              <Lock size={12} className="mr-1.5" /> Demander accès Data Room
+            </Button>
+          )
+        )}
+      </div>
+    </div>
   );
 }
