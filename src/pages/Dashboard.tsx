@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus, Clock, Heart, FileText, Eye, ArrowRight, Search,
-  Compass, AlertTriangle, Star
+  Compass, AlertTriangle, Star, ClipboardList
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -110,11 +110,18 @@ function VendeurDashboard() {
           <h1 className="font-display text-3xl font-bold text-foreground">Espace Vendeur</h1>
           <p className="text-muted-foreground mt-1 text-sm">Bienvenue dans votre espace vendeur Matchstone.</p>
         </div>
-        <Link to="/listings/create">
-          <Button className="glow-gold font-medium">
-            <Plus size={15} className="mr-1.5" /> Publier une annonce
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/onboarding">
+            <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5">
+              <ClipboardList size={15} className="mr-1.5" /> Onboarding
+            </Button>
+          </Link>
+          <Link to="/listings/create">
+            <Button className="glow-gold font-medium">
+              <Plus size={15} className="mr-1.5" /> Publier une annonce
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
