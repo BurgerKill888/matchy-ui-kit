@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Building2, Loader2, Briefcase, TrendingUp, Home, PiggyBank, Landmark, Shield, Scale, ChevronLeft, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -45,6 +46,7 @@ export default function AuthModal({ open, onOpenChange, mode, onModeChange }: Au
   const [registerStep, setRegisterStep] = useState(1);
   const { signIn, signUp, resetPassword } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const resetForm = () => {
     setEmail("");
@@ -59,33 +61,21 @@ export default function AuthModal({ open, onOpenChange, mode, onModeChange }: Au
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
+    // Fictif : pas de vraie auth
+    setTimeout(() => {
+      setLoading(false);
       if (mode === "login") {
-        const { error } = await signIn(email, password);
-        if (error) throw error;
         toast({ title: "Connexion réussie", description: "Bienvenue sur Matchstone !" });
         onOpenChange(false);
         resetForm();
+        navigate("/dashboard");
       } else {
-        const { error } = await signUp(email, password, {
-          first_name: firstName,
-          last_name: lastName,
-          company_name: company,
-          user_type: selectedProfile,
-        });
-        if (error) throw error;
-        toast({
-          title: "Inscription réussie",
-          description: "Vérifiez votre email pour confirmer votre compte.",
-        });
+        toast({ title: "Inscription réussie", description: "Bienvenue ! Configurez votre profil." });
         onOpenChange(false);
         resetForm();
+        navigate("/onboarding");
       }
-    } catch (err: any) {
-      toast({ title: "Erreur", description: err.message, variant: "destructive" });
-    } finally {
-      setLoading(false);
-    }
+    }, 600);
   };
 
   const handleResetPassword = async (e: React.FormEvent) => {
