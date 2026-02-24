@@ -85,7 +85,7 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
           {match.timerHours < 24 && <AlertTriangle size={11} className="text-destructive" />}
           <span className={timerColor}>{match.timer}</span>
         </div>
-        <Link to="/messaging">
+        <Link to="/matches">
           <Button size="sm" className="text-xs px-3 h-8 glow-gold">
             Voir <ArrowRight size={12} className="ml-1" />
           </Button>

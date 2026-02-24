@@ -14,7 +14,7 @@ import AcquereurDataRoom from "./pages/AcquereurDataRoom";
 import ListingDetail from "./pages/ListingDetail";
 import CreateForm from "./pages/CreateForm";
 import DataRoom from "./pages/DataRoom";
-import Messaging from "./pages/Messaging";
+// Messaging merged into Matches
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Legal from "./pages/Legal";
@@ -43,7 +43,7 @@ const App = () => (
             <Route path="/acquereur-dataroom" element={<AcquereurDataRoom />} />
             <Route path="/dataroom" element={<DataRoom />} />
             <Route path="/dataroom/:id" element={<DataRoom />} />
-            <Route path="/messaging" element={<Messaging />} />
+            <Route path="/messaging" element={<Navigate to="/matches" replace />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/legal" element={<Legal type="cgu" />} />
