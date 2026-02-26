@@ -59,12 +59,12 @@ function DpeBadge({ dpe }: { dpe: string | null }) {
   );
 }
 
-function PhotoCarousel({ photos, type, status, priceTag }: { photos: number; type: string; status: string; priceTag: string }) {
+function PhotoCarousel({ photos, type, status, priceTag, hidePause }: { photos: number; type: string; status: string; priceTag: string; hidePause?: boolean }) {
   const [current, setCurrent] = useState(0);
-  const isDraft = status === "draft";
+  const isDraft = status === "draft" && !hidePause;
   return (
     <div className="relative h-44 bg-gradient-to-br from-secondary to-muted flex items-center justify-center overflow-hidden group">
-      <span className="text-4xl font-display text-muted-foreground/15 italic font-light">{type}</span>
+      <span className="text-4xl font-display text-muted-foreground/15 italic font-light text-center px-4">{type}</span>
 
       {/* Draft / Pause overlay */}
       {isDraft && (
@@ -219,7 +219,7 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                     <div className="h-1" style={{ backgroundColor: getTypeColor(item.type) }} />
 
                     {/* Photo carousel with status overlay */}
-                    <PhotoCarousel photos={item.photos} type={item.type} status={item.status} priceTag={item.priceTag} />
+                    <PhotoCarousel photos={item.photos} type={item.type} status={item.status} priceTag={item.priceTag} hidePause={mode === "catalog"} />
 
                     <div className={`p-4 ${item.status === "draft" ? "opacity-60" : ""}`}>
                       {/* Prix + price tag */}
