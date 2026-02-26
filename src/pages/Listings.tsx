@@ -1,12 +1,19 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, MapPin, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Images, Zap } from "lucide-react";
+import { Plus, Eye, MapPin, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Images, Zap, MoreVertical, Pencil, Trash2, Pause, Play } from "lucide-react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import EmptyState from "@/components/EmptyState";
 import { getTypeColor, typeColors } from "@/lib/propertyTypes";
 import { DeleteContentModal, ContentDeletedModal } from "@/components/modals/SystemModals";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const typeList = [
   "Tous",
@@ -127,10 +134,12 @@ interface ListingsPageProps {
 }
 
 export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
+  const navigate = useNavigate();
   const [typeFilter, setTypeFilter] = useState("Tous");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<typeof mockListings[0] | null>(null);
+  const [pauseTarget, setPauseTarget] = useState<typeof mockListings[0] | null>(null);
 
   const filtered = typeFilter === "Tous" ? mockListings : mockListings.filter((l) => l.type === typeFilter);
 
@@ -222,17 +231,42 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
                     <PhotoCarousel photos={item.photos} type={item.type} status={item.status} priceTag={item.priceTag} hidePause={mode === "catalog"} />
 
                     <div className={`p-4 ${item.status === "draft" ? "opacity-60" : ""}`}>
-                      {/* Prix + price tag */}
-                      <div className="flex items-baseline gap-2 mb-1.5">
-                        {item.priceTag === "offmarket" ? (
-                          <span className="text-xl font-extrabold text-foreground tracking-tight">Prix confidentiel</span>
-                        ) : (
-                          <span className="text-xl font-extrabold text-foreground tracking-tight">{item.price}</span>
-                        )}
-                        {item.priceTag !== "offmarket" && (
-                          <span className="text-[11px] font-semibold text-primary bg-primary/10 rounded px-2 py-0.5">
-                            {priceTagConfig[item.priceTag].label}
-                          </span>
+                      {/* Prix + price tag + actions */}
+                      <div className="flex items-start justify-between mb-1.5">
+                        <div className="flex items-baseline gap-2">
+                          {item.priceTag === "offmarket" ? (
+                            <span className="text-xl font-extrabold text-foreground tracking-tight">Prix confidentiel</span>
+                          ) : (
+                            <span className="text-xl font-extrabold text-foreground tracking-tight">{item.price}</span>
+                          )}
+                          {item.priceTag !== "offmarket" && (
+                            <span className="text-[11px] font-semibold text-primary bg-primary/10 rounded px-2 py-0.5">
+                              {priceTagConfig[item.priceTag].label}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action menu (seller mode only) */}
+                        {mode !== "catalog" && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                              <button className="p-1 -mr-1 -mt-0.5 rounded-md hover:bg-secondary transition-colors">
+                                <MoreVertical size={16} className="text-muted-foreground" />
+                              </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                              <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/listings/${item.id}/edit`); }}>
+                                <Pencil size={14} className="mr-2" /> Modifier l'annonce
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.preventDefault(); e.stopPropagation(); setPauseTarget(item); }}>
+                                {item.status === "draft" ? <><Play size={14} className="mr-2" /> Réactiver</> : <><Pause size={14} className="mr-2" /> Mettre en pause</>}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={(e) => handleDeleteClick(e, item)}>
+                                <Trash2 size={14} className="mr-2" /> Supprimer
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
 
