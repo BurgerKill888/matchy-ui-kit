@@ -609,7 +609,7 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
             <span className={`flex items-center gap-0.5 text-[10px] ${timerUrgent ? "text-warning" : "text-muted-foreground"}`}>
               {timerUrgent ? <AlertTriangle size={9} /> : <Clock size={9} />} {match.timer}
             </span>
-            <span className="text-[10px] font-bold text-primary ml-auto">Closing {match.compatibility}%</span>
+            <span className="text-[10px] font-bold text-primary ml-auto">Compatibilité {match.compatibility}%</span>
           </div>
         </div>
       </div>
@@ -760,7 +760,7 @@ function PropertyDetailColumn({ selected, isAcquereur }: { selected: MatchItem; 
           <Ruler size={13} /> {selected.surface}
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
-          <Heart size={13} className="text-primary" /> <span>Closing <span className="font-semibold text-foreground">{selected.compatibility}%</span></span>
+          <Heart size={13} className="text-primary" /> <span>Compatibilité <span className="font-semibold text-foreground">{selected.compatibility}%</span></span>
         </div>
       </div>
 
