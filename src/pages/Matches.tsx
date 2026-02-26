@@ -649,7 +649,7 @@ function ConversationColumn({
               <Info size={12} className="mr-1" /> Détails de l'annonce
             </Button>
           )}
-          {showDetailsBtn && isAcquereur && (
+          {isAcquereur && (
             selected.dataRoomAccess ? (
               <Link to="/dataroom">
                 <Button variant="outline" size="sm" className="text-xs h-7">
@@ -659,7 +659,7 @@ function ConversationColumn({
             ) : (
               <>
                 <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setHeaderDataRoomOpen(true)}>
-                  <Lock size={12} className="mr-1" /> Demander Data Room
+                  <Lock size={12} className="mr-1" /> Demander accès Data Room
                 </Button>
                 <DataRoomRequestModal open={headerDataRoomOpen} onOpenChange={setHeaderDataRoomOpen} propertyName={selected.property} />
               </>

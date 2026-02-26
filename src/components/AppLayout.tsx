@@ -21,7 +21,6 @@ const vendeurNav: NavItem[] = [
 
 const acquereurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
-{ label: "Découvrir", icon: Compass, href: "/discovery" },
 { label: "Mes matches", icon: Heart, href: "/matches" },
 { label: "Mes fiches", icon: FileText, href: "/criteria" },
 { label: "Catalogue", icon: LayoutGrid, href: "/catalog", vip: true },
@@ -86,13 +85,6 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
           <SpaceToggle />
 
           <div className="flex items-center gap-1">
-            {isAcquereur &&
-            <Link to="/discovery">
-                <Button size="sm" className="glow-gold hidden sm:flex">
-                  <Compass size={16} className="mr-1.5" /> Découvrir
-                </Button>
-              </Link>
-            }
             <NotificationPanel />
             <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
