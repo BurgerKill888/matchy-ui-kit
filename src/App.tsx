@@ -42,7 +42,7 @@ const App = () => (
               <Route path="/listings" element={<Listings mode="listings" />} />
               <Route path="/listings/create" element={<CreateForm mode="listing" />} />
               <Route path="/listings/:id" element={<ListingDetail />} />
-              <Route path="/catalog" element={<CatalogPage />} />
+              <Route path="/catalog" element={<Listings mode="catalog" />} />
               <Route path="/criteria" element={<CriteriaPage />} />
               <Route path="/criteria/create" element={<CreateForm mode="criteria" />} />
               <Route path="/acquereur-dataroom" element={<AcquereurDataRoom />} />
