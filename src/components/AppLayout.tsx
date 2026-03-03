@@ -15,15 +15,15 @@ type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean
 const vendeurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
 { label: "Mes matches", icon: Heart, href: "/matches" },
-{ label: "Mes annonces", icon: FileText, href: "/listings" },
-{ label: "Paramètres", icon: Settings, href: "/settings" }];
-
+{ label: "Mes annonces", icon: FileText, href: "/listings" }];
 
 const acquereurNav: NavItem[] = [
 { label: "Mon dashboard", icon: LayoutDashboard, href: "/dashboard" },
 { label: "Mes matches", icon: Heart, href: "/matches" },
 { label: "Mes fiches", icon: FileText, href: "/criteria" },
-{ label: "Catalogue", icon: LayoutGrid, href: "/catalog", vip: true },
+{ label: "Catalogue", icon: LayoutGrid, href: "/catalog", vip: true }];
+
+const bottomNav: NavItem[] = [
 { label: "Paramètres", icon: Settings, href: "/settings" }];
 
 
@@ -154,10 +154,33 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
             })}
           </nav>
 
-          {/* Collapse toggle + mode indicator */}
-          <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-border flex flex-col gap-2`}>
+          {/* Bottom nav + Collapse toggle */}
+          <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-border flex flex-col gap-1`}>
+            {bottomNav.map((item) => {
+              const active = location.pathname === item.href;
+              const linkContent = (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
+                  active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
+                  <item.icon size={18} />
+                  {!collapsed && <span>{item.label}</span>}
+                </Link>
+              );
+              if (collapsed) {
+                return (
+                  <Tooltip key={item.href}>
+                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                    <TooltipContent side="right" className="text-xs">{item.label}</TooltipContent>
+                  </Tooltip>
+                );
+              }
+              return linkContent;
+            })}
             {!collapsed && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                 <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
                 {space === "vendeur" ? "Mode Vendeur" : "Mode Acquéreur"}
               </div>
