@@ -402,11 +402,13 @@ export default function Onboarding() {
                     <Button type="button" variant="outline" className="w-full h-12 text-base font-bold" disabled>
                       Continuer avec LinkedIn
                     </Button>
-                    <p className="text-center text-sm text-muted-foreground">
-                      Pas de compte ?{" "}
-                      <button type="button" onClick={() => { setAuthView("register"); setAuthSubmitted(false); }}
-                        className="text-foreground hover:underline font-semibold underline">Créer un compte</button>
-                    </p>
+                    <div className="text-center pt-2">
+                      <p className="text-sm text-muted-foreground mb-2">Pas de compte ?</p>
+                      <Button type="button" variant="outline" className="w-full h-11 text-base font-bold border-primary/40 text-primary hover:bg-primary/10"
+                        onClick={() => { setAuthView("register"); setAuthSubmitted(false); }}>
+                        Créer un compte
+                      </Button>
+                    </div>
                   </form>
                 </div>
               </motion.div>
