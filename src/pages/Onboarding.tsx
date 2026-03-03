@@ -356,16 +356,11 @@ export default function Onboarding() {
     setAuthSubmitted(true);
     if (!authEmail || !authPassword) return;
     setAuthLoading(true);
-    try {
-      const { error } = await signIn(authEmail, authPassword);
-      if (error) throw error;
+    setTimeout(() => {
+      setAuthLoading(false);
       toast({ title: "Connexion réussie", description: "Bienvenue sur Matchstone !" });
       navigate("/dashboard", { replace: true });
-    } catch (err: any) {
-      toast({ title: "Erreur de connexion", description: err.message, variant: "destructive" });
-    } finally {
-      setAuthLoading(false);
-    }
+    }, 600);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -373,19 +368,11 @@ export default function Onboarding() {
     setAuthSubmitted(true);
     if (!authEmail || !authPassword || !authFirstName || !authLastName) return;
     setAuthLoading(true);
-    try {
-      const { error } = await signUp(authEmail, authPassword, {
-        first_name: authFirstName,
-        last_name: authLastName,
-      });
-      if (error) throw error;
-      toast({ title: "Inscription réussie", description: "Vérifiez votre email pour confirmer votre compte." });
-      setAuthView("login");
-    } catch (err: any) {
-      toast({ title: "Erreur d'inscription", description: err.message, variant: "destructive" });
-    } finally {
+    setTimeout(() => {
       setAuthLoading(false);
-    }
+      toast({ title: "Inscription réussie", description: "Bienvenue sur Matchstone !" });
+      navigate("/dashboard", { replace: true });
+    }, 600);
   };
 
   const handleForgot = async (e: React.FormEvent) => {
@@ -424,7 +411,7 @@ export default function Onboarding() {
               <motion.div key="login" {...anim} className="w-full max-w-md">
                 <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
                   <div className="text-center mb-6">
-                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 1 sur 3 · Connexion</span>
+                    
                     <h1 className="font-display text-2xl font-bold mb-1">Connexion</h1>
                     <p className="text-sm text-muted-foreground">Accédez à votre compte Matchstone.</p>
                   </div>
@@ -476,7 +463,7 @@ export default function Onboarding() {
               <motion.div key="register" {...anim} className="w-full max-w-md">
                 <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
                   <div className="text-center mb-6">
-                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 1 sur 3 · Créer un compte</span>
+                    
                     <h1 className="font-display text-2xl font-bold mb-1">Créer un compte</h1>
                     <p className="text-sm text-muted-foreground">Accès technique à la plateforme Matchstone.</p>
                   </div>
