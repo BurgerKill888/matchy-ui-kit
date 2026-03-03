@@ -356,11 +356,16 @@ export default function Onboarding() {
     setAuthSubmitted(true);
     if (!authEmail || !authPassword) return;
     setAuthLoading(true);
-    setTimeout(() => {
-      setAuthLoading(false);
-      setAuthDone(true);
+    try {
+      const { error } = await signIn(authEmail, authPassword);
+      if (error) throw error;
       toast({ title: "Connexion réussie", description: "Bienvenue sur Matchstone !" });
-    }, 600);
+      navigate("/dashboard", { replace: true });
+    } catch (err: any) {
+      toast({ title: "Erreur de connexion", description: err.message, variant: "destructive" });
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -368,11 +373,19 @@ export default function Onboarding() {
     setAuthSubmitted(true);
     if (!authEmail || !authPassword || !authFirstName || !authLastName) return;
     setAuthLoading(true);
-    setTimeout(() => {
+    try {
+      const { error } = await signUp(authEmail, authPassword, {
+        first_name: authFirstName,
+        last_name: authLastName,
+      });
+      if (error) throw error;
+      toast({ title: "Inscription réussie", description: "Vérifiez votre email pour confirmer votre compte." });
+      setAuthView("login");
+    } catch (err: any) {
+      toast({ title: "Erreur d'inscription", description: err.message, variant: "destructive" });
+    } finally {
       setAuthLoading(false);
-      setAuthDone(true);
-      toast({ title: "Inscription réussie", description: "Bienvenue sur Matchstone !" });
-    }, 600);
+    }
   };
 
   const handleForgot = async (e: React.FormEvent) => {
