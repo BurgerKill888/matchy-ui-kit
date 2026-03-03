@@ -183,7 +183,7 @@ export default function Onboarding() {
   const [authCompany, setAuthCompany] = useState("");
   const [authSubmitted, setAuthSubmitted] = useState(false);
 
-  // Steps: 0=profil pro, 1=action métier, 2=opération, 3=intro, 4=questionnaire, 5=confirm
+  // Steps: 0=profil pro, 1=action métier, 2=opération, 3=nature vente (conditional), 4=intro, 5=questionnaire, 6=confirm
   const [step, setStep] = useState(0);
   const [qStep, setQStep] = useState(0);
   const [showErr, setShowErr] = useState(false);
@@ -203,6 +203,10 @@ export default function Onboarding() {
   const [roles, setRoles] = useState<string[]>([]);
   const [opType, setOpType] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string | null>(null);
+
+  // Step 3: Nature de la vente (conditional)
+  const [ventePour, setVentePour] = useState<string | null>(null);
+  const [venteMandat, setVenteMandat] = useState<{ name: string; size: string; icon: string }[]>([]);
 
   // Vendeur Actif
   const [vTypo, setVTypo] = useState<string[]>([]);
@@ -265,6 +269,9 @@ export default function Onboarding() {
   const addFakeDoc = (setter: React.Dispatch<React.SetStateAction<{ name: string; size: string; icon: string }[]>>) =>
     setter(p => [...p, { name: `document_${p.length + 1}.pdf`, size: "1.1 MB", icon: "📄" }]);
 
+  // Whether the "Nature de la vente" step applies
+  const showNatureVente = activeRole === "vendeur" && (proType === "agent" || proType === "marchand");
+
   // Dynamic labels for questionnaire sub-steps
   const getQLabels = (): string[] => {
     if (activeRole === "vendeur") {
@@ -279,20 +286,57 @@ export default function Onboarding() {
   };
   const qLabels = getQLabels();
 
-  // Progress: profil pro + action + opération + intro + questionnaire steps + confirm
-  const topLevelSteps = 4; // profil pro, action, opération, intro
-  const totalSteps = topLevelSteps + qLabels.length + 1; // +1 for confirm
-  const currentStep = step <= 3 ? step + 1 : step === 5 ? totalSteps : topLevelSteps + qStep + 1;
-  const stepLabels = ["Profil pro", "Action", "Opération", "Introduction"];
-  const currentLabel = step <= 3 ? stepLabels[step] : step === 5 ? "Confirmation" : qLabels[qStep];
+  // Progress: profil pro + action + opération + (nature vente?) + intro + questionnaire steps + confirm
+  const topLevelSteps = showNatureVente ? 5 : 4;
+  const totalSteps = topLevelSteps + qLabels.length + 1;
+  const getCurrentStep = () => {
+    if (step <= 2) return step + 1;
+    if (step === 3) return showNatureVente ? 4 : 4; // nature vente step
+    if (step === 4) return showNatureVente ? 5 : 4;
+    if (step === 6) return totalSteps;
+    return topLevelSteps + qStep + 1; // step 5 = questionnaire
+  };
+  const currentStep = getCurrentStep();
+  const stepLabelsArr = showNatureVente
+    ? ["Profil pro", "Action", "Opération", "Nature vente", "Introduction"]
+    : ["Profil pro", "Action", "Opération", "Introduction"];
+  const getCurrentLabel = () => {
+    if (step === 0) return stepLabelsArr[0];
+    if (step === 1) return stepLabelsArr[1];
+    if (step === 2) return stepLabelsArr[2];
+    if (step === 3) return showNatureVente ? stepLabelsArr[3] : stepLabelsArr[3];
+    if (step === 4) return showNatureVente ? stepLabelsArr[4] : stepLabelsArr[3];
+    if (step === 6) return "Confirmation";
+    return qLabels[qStep];
+  };
+  const currentLabel = getCurrentLabel();
   const progress = (currentStep / totalSteps) * 100;
 
+  // Navigation helpers
+  const goAfterOperation = () => {
+    if (showNatureVente) {
+      setStep(3); // nature de la vente
+    } else {
+      setStep(4); // intro
+    }
+  };
+
+  const goBackFromIntro = () => {
+    if (showNatureVente) {
+      setStep(3);
+    } else {
+      setStep(2);
+    }
+    setShowErr(false);
+  };
+
   const handleFinish = () => {
-    // If dual role and first role done, switch to second
     if (roles.length === 2 && roles.indexOf(activeRole!) === 0) {
       setActiveRole(roles[1]);
       setOpType(null);
-      setStep(2); // back to operation type for second role
+      setVentePour(null);
+      setVenteMandat([]);
+      setStep(2);
       setQStep(0);
       setShowErr(false);
       return;
@@ -302,8 +346,8 @@ export default function Onboarding() {
     navigate("/dashboard", { replace: true });
   };
 
-  const goQNext = () => { if (qStep < qLabels.length - 1) setQStep(qStep + 1); else setStep(5); };
-  const goQBack = () => { setShowErr(false); if (qStep > 0) setQStep(qStep - 1); else setStep(3); };
+  const goQNext = () => { if (qStep < qLabels.length - 1) setQStep(qStep + 1); else setStep(6); };
+  const goQBack = () => { setShowErr(false); if (qStep > 0) setQStep(qStep - 1); else setStep(4); };
 
   const anim = { initial: { opacity: 0, x: 30 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -30 }, transition: { duration: 0.25 } };
 
@@ -699,14 +743,68 @@ export default function Onboarding() {
                 {showErr && !opType && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez un type d'opération.</p>}
                 <div className="flex gap-3 mt-6">
                   <Button variant="outline" className="flex-1" onClick={() => setStep(1)}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                  <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, () => setStep(3))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                  <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, goAfterOperation)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ==================== STEP 3: Introduction ==================== */}
-          {step === 3 && (
+          {/* ==================== STEP 3: Nature de la vente (conditional) ==================== */}
+          {step === 3 && showNatureVente && (
+            <motion.div key="nature-vente" {...anim}>
+              <div className="glass-card rounded-xl p-6 shadow-card">
+                <h2 className="font-display text-xl font-bold mb-1">Nature de la vente</h2>
+                <p className="text-sm text-muted-foreground mb-6">Cette vente est-elle réalisée pour votre compte propre ou pour le compte d'un tiers ?</p>
+
+                {[
+                  { id: "propre", icon: "🏠", t: "Compte propre", d: "Vous êtes propriétaire du bien" },
+                  { id: "tiers", icon: "🤝", t: "Compte de tiers", d: "Vous vendez pour le compte d'un client" },
+                ].map(o => (
+                  <button key={o.id} type="button" onClick={() => { setVentePour(o.id); if (o.id === "propre") setVenteMandat([]); }}
+                    className={cn("w-full p-4 rounded-xl mb-2 flex items-center gap-4 border-2 transition-all text-left",
+                      ventePour === o.id ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.15)]" : "border-border bg-secondary/30 hover:border-primary/40"
+                    )}>
+                    <div className="text-2xl w-10 text-center">{o.icon}</div>
+                    <div className="flex-1"><div className="text-sm font-bold">{o.t}</div><div className="text-xs text-muted-foreground mt-0.5">{o.d}</div></div>
+                    <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs",
+                      ventePour === o.id ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40"
+                    )}>{ventePour === o.id && <Check size={10} />}</div>
+                  </button>
+                ))}
+                {showErr && !ventePour && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez une option.</p>}
+
+                <AnimatePresence mode="wait">
+                  {ventePour === "tiers" && (
+                    <motion.div key="upload-mandat" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+                      <UploadZone
+                        label={proType === "agent" ? "Mandat de vente (obligatoire)" : "Contrat client (obligatoire)"}
+                        files={venteMandat}
+                        onAdd={() => addFakeDoc(setVenteMandat)}
+                        onRemove={(i) => setVenteMandat(p => p.filter((_, idx) => idx !== i))}
+                        accept="PDF, JPG, PNG"
+                        icon="📄"
+                      />
+                      {venteMandat.length === 0 && (
+                        <p className="text-xs text-warning -mt-3 mb-4">⚠ Ce document est requis pour la mise en ligne de l'annonce.</p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex gap-3 mt-6">
+                  <Button variant="outline" className="flex-1" onClick={() => { setStep(2); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                  <Button
+                    className="flex-1 glow-gold"
+                    disabled={!ventePour || (ventePour === "tiers" && venteMandat.length === 0)}
+                    onClick={() => tryNext(!!ventePour, () => setStep(4))}
+                  >Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ==================== STEP 4: Introduction ==================== */}
+          {step === 4 && (
             <motion.div key="intro" {...anim}>
               <div className="glass-card rounded-xl p-6 shadow-card text-center">
                 <h2 className="font-display text-xl font-bold mb-1">
@@ -737,15 +835,15 @@ export default function Onboarding() {
                 {activeRole === "vendeur" && <InfoBox icon="🔒">L'adresse exacte ne sera jamais publique.</InfoBox>}
                 <InfoBox icon="💾">Progression sauvegardée automatiquement.</InfoBox>
                 <div className="flex gap-3 mt-4">
-                  <Button variant="outline" className="flex-1" onClick={() => { setStep(2); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                  <Button className="flex-1 glow-gold" onClick={() => { setStep(4); setQStep(0); }}>Commencer <ArrowRight className="ml-2" size={16} /></Button>
+                  <Button variant="outline" className="flex-1" onClick={goBackFromIntro}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                  <Button className="flex-1 glow-gold" onClick={() => { setStep(5); setQStep(0); }}>Commencer <ArrowRight className="ml-2" size={16} /></Button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* ==================== STEP 4: Questionnaire ==================== */}
-          {step === 4 && (
+          {/* ==================== STEP 5: Questionnaire ==================== */}
+          {step === 5 && (
             <motion.div key={`q-${activeRole}-${opType}-${qStep}`} {...anim}>
               <StepperBar current={qStep} labels={qLabels} />
 
@@ -757,7 +855,7 @@ export default function Onboarding() {
                   {TYPOS_ACTIF.map(t => <CheckItem key={t} label={t} checked={vTypo.includes(t)} onClick={() => toggleArr(vTypo, setVTypo, t)} />)}
                   {showErr && !vTypo.length && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez au moins une typologie.</p>}
                   <div className="flex gap-3 mt-6">
-                    <Button variant="outline" className="flex-1" onClick={() => { setStep(3); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => { setStep(4); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
                     <Button className="flex-1 glow-gold" onClick={() => tryNext(vTypo.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
@@ -1065,8 +1163,8 @@ export default function Onboarding() {
             </motion.div>
           )}
 
-          {/* ==================== STEP 5: Confirmation ==================== */}
-          {step === 5 && (
+          {/* ==================== STEP 6: Confirmation ==================== */}
+          {step === 6 && (
             <motion.div key="confirm" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <div className="glass-card rounded-xl p-6 shadow-card text-center">
                 <div className="text-6xl mb-4">✅</div>
