@@ -507,8 +507,8 @@ function MatchListColumn({
           </div>
         ) : (
           <div className="px-2 pb-2 space-y-2">
-            {active.map((m) => (
-              <MatchListItem key={m.id} match={m} selected={selectedId === m.id} onSelect={onSelect} />
+            {active.map((m, idx) => (
+              <MatchListItem key={m.id} match={m} selected={selectedId === m.id} onSelect={onSelect} isFirstNew={idx === 0 && m.status === "new"} />
             ))}
 
             {expired.length > 0 && (
@@ -546,12 +546,11 @@ function FilterPill({ active, onClick, label, muted }: { active: boolean; onClic
   );
 }
 
-function MatchListItem({ match, selected, onSelect }: { match: MatchItem; selected: boolean; onSelect: (id: number) => void }) {
+function MatchListItem({ match, selected, onSelect, isFirstNew = false }: { match: MatchItem; selected: boolean; onSelect: (id: number) => void; isFirstNew?: boolean }) {
   const isExpired = match.status === "expired";
   const st = statusConfig[match.status];
   const timerUrgent = match.timerHours > 0 && match.timerHours < 24;
   const isOffmarket = match.priceTag.includes("Off-market");
-  const isNew = match.status === "new";
 
   return (
     <button
@@ -559,7 +558,7 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
       className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden border ${
         selected
           ? "bg-primary/10 border-primary/30"
-          : isNew
+          : isFirstNew
             ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
             : isExpired
               ? "border-transparent opacity-50 hover:bg-secondary/50"
