@@ -27,15 +27,35 @@ const acquereurNav: NavItem[] = [
 { label: "Paramètres", icon: Settings, href: "/settings" }];
 
 
+// Pages that are specific to one space and would cause confusion if staying on them
+const VENDEUR_ONLY_PAGES = ["/listings", "/dataroom"];
+const ACQUEREUR_ONLY_PAGES = ["/criteria", "/catalog", "/discovery", "/acquereur-dataroom"];
+
 function SpaceToggle() {
   const { space, setSpace } = useUserSpace();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleSwitch = (newSpace: "vendeur" | "acquereur") => {
+    if (newSpace === space) return;
+    setSpace(newSpace);
+
+    // Check if current page is specific to the old space
+    const isOnOldSpacePage =
+      (space === "vendeur" && VENDEUR_ONLY_PAGES.some(p => location.pathname.startsWith(p))) ||
+      (space === "acquereur" && ACQUEREUR_ONLY_PAGES.some(p => location.pathname.startsWith(p)));
+
+    if (isOnOldSpacePage) {
+      navigate("/dashboard", { replace: true });
+    }
+  };
 
   return (
     <div className="flex items-center gap-0.5 p-1 rounded-xl bg-secondary border border-border">
       {(["vendeur", "acquereur"] as const).map((s) =>
       <button
         key={s}
-        onClick={() => setSpace(s)}
+        onClick={() => handleSwitch(s)}
         className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
         space === s ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`
         }>
