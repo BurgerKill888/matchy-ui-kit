@@ -371,7 +371,7 @@ export default function Onboarding() {
     setTimeout(() => {
       setAuthLoading(false);
       toast({ title: "Inscription réussie", description: "Bienvenue sur Matchstone !" });
-      navigate("/dashboard", { replace: true });
+      setAuthDone(true);
     }, 600);
   };
 
