@@ -1,9 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ArrowLeft, ArrowRight, Check, Upload, X, Loader2, Briefcase, TrendingUp, Home, PiggyBank, Landmark, Shield, Scale } from "lucide-react";
+import { Building2, ArrowLeft, ArrowRight, Check, Upload, X, Loader2, Briefcase, TrendingUp, Home, PiggyBank, Landmark, Shield, Scale, CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useUserSpace } from "@/contexts/UserSpaceContext";
@@ -187,7 +192,12 @@ export default function Onboarding() {
   const [proType, setProType] = useState("");
   const [proCompany, setProCompany] = useState("");
   const [proSiret, setProSiret] = useState("");
-  const [proFunction, setProFunction] = useState("");
+  const [proStatut, setProStatut] = useState("");
+  const [proParticipation, setProParticipation] = useState("");
+  const [proPoste, setProPoste] = useState("");
+  const [proCarteT, setProCarteT] = useState("");
+  const [proCarteTDate, setProCarteTDate] = useState<Date | undefined>(undefined);
+  const [proDeclaration, setProDeclaration] = useState("");
 
   // Step 1: Action métier (vendeur/acquéreur)
   const [roles, setRoles] = useState<string[]>([]);
@@ -555,9 +565,65 @@ export default function Onboarding() {
                 <SectionLabel>Informations société</SectionLabel>
                 <InputField label="Nom de la société" placeholder="ex : SCI Patrimoine" value={proCompany} onChange={setProCompany} error={showErr && !proCompany ? "Obligatoire" : null} />
                 <InputField label="SIRET" placeholder="ex : 123 456 789 00012" value={proSiret} onChange={setProSiret} required={false} />
-                <InputField label="Fonction / Poste" placeholder="ex : Directeur associé" value={proFunction} onChange={setProFunction} error={showErr && !proFunction ? "Obligatoire" : null} />
 
-                <Button className="w-full glow-gold mt-4" onClick={() => tryNext(!!(proType && proCompany && proFunction), () => setStep(1))}>
+                <div className="mb-4">
+                  <Label>Statut dans la structure <span className="text-destructive">*</span></Label>
+                  <Select value={proStatut} onValueChange={(v) => { setProStatut(v); setProParticipation(""); setProPoste(""); }}>
+                    <SelectTrigger className={cn("mt-1.5 bg-secondary border-border", showErr && !proStatut && "border-destructive ring-destructive/30 ring-2")}>
+                      <SelectValue placeholder="Sélectionnez votre statut" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["Gérant", "Président", "Associé", "Employé"].map(s => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {showErr && !proStatut && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {proStatut === "Associé" && (
+                    <motion.div key="participation" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+                      <InputField label="Participation" placeholder="ex : 40% ou 200 parts sur 500" value={proParticipation} onChange={setProParticipation} required={false} />
+                    </motion.div>
+                  )}
+                  {proStatut === "Employé" && (
+                    <motion.div key="poste" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+                      <InputField label="Poste occupé" placeholder="ex : Responsable acquisitions" value={proPoste} onChange={setProPoste} required={false} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence mode="wait">
+                  {proType === "agent" && (
+                    <motion.div key="carte-t" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+                      <SectionLabel>Carte professionnelle</SectionLabel>
+                      <InputField label="N° Carte professionnelle (Carte T)" placeholder="ex : CPI 7501 2023 000 000 001" value={proCarteT} onChange={setProCarteT} required={false} />
+                      <div className="mb-4">
+                        <Label>Date de validité <span className="text-[10px] text-muted-foreground font-normal">(facultatif)</span></Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="outline" className={cn("w-full mt-1.5 justify-start text-left font-normal bg-secondary border-border", !proCarteTDate && "text-muted-foreground")}>
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {proCarteTDate ? format(proCarteTDate, "dd MMMM yyyy", { locale: fr }) : "Sélectionnez une date"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar mode="single" selected={proCarteTDate} onSelect={setProCarteTDate} locale={fr} />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </motion.div>
+                  )}
+                  {proType === "marchand" && (
+                    <motion.div key="declaration" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}>
+                      <SectionLabel>Informations réglementaires</SectionLabel>
+                      <InputField label="N° Déclaration d'activité" placeholder="ex : 2023-001234" value={proDeclaration} onChange={setProDeclaration} required={false} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <Button className="w-full glow-gold mt-4" onClick={() => tryNext(!!(proType && proCompany && proStatut), () => setStep(1))}>
                   Continuer <ArrowRight className="ml-2" size={16} />
                 </Button>
               </div>
