@@ -93,7 +93,9 @@ export default function Onboarding() {
 
   // Professional profile fields
   const [proCompany, setProCompany] = useState("");
-  const [proFunction, setProFunction] = useState("");
+  const [proStatut, setProStatut] = useState<string | null>(null);
+  const [proPartsDetail, setProPartsDetail] = useState("");
+  const [proPoste, setProPoste] = useState("");
   const [proPhone, setProPhone] = useState("");
   const [proCity, setProCity] = useState("");
 
@@ -302,7 +304,7 @@ export default function Onboarding() {
   }
 
   // ===== POST-AUTH FLOW =====
-  const canProceedProfile = proCompany.trim() !== "" && proFunction.trim() !== "";
+  const canProceedProfile = proCompany.trim() !== "" && proStatut !== null && (proStatut !== "employe" || proPoste.trim() !== "");
 
   return (
     <div className="min-h-screen bg-background">
@@ -326,12 +328,46 @@ export default function Onboarding() {
             <motion.div key="profile" {...anim}>
               <div className="glass-card rounded-xl p-6 shadow-card">
                 <h2 className="font-display text-xl font-bold mb-1">Complétez votre profil professionnel</h2>
-                <p className="text-sm text-muted-foreground mb-6">Votre identité sur Matchstone — société, fonction, coordonnées.</p>
+                <p className="text-sm text-muted-foreground mb-6">Votre identité sur Matchstone — société, fonction, documents.</p>
 
                 <InputField label="Société" placeholder="Nom de votre entreprise" value={proCompany} onChange={setProCompany}
                   error={showErr && !proCompany.trim() ? "Obligatoire" : null} />
-                <InputField label="Fonction / Titre" placeholder="ex : Directeur d'investissement" value={proFunction} onChange={setProFunction}
-                  error={showErr && !proFunction.trim() ? "Obligatoire" : null} />
+
+                <div className="mb-4">
+                  <Label>Statut / Fonction <span className="text-destructive">*</span></Label>
+                  <div className="space-y-2 mt-2">
+                    {[
+                      { id: "gerant", label: "Gérant(e)" },
+                      { id: "president", label: "Président(e)" },
+                      { id: "associe", label: "Associé(e)" },
+                      { id: "employe", label: "Employé(e) d'une structure immobilière" },
+                    ].map(s => (
+                      <button key={s.id} type="button" onClick={() => setProStatut(s.id)}
+                        className={cn("w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left",
+                          proStatut === s.id ? "border-primary bg-primary/10" : "border-border bg-secondary/30 hover:border-primary/40"
+                        )}>
+                        <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs shrink-0",
+                          proStatut === s.id ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40"
+                        )}>{proStatut === s.id && <Check size={10} />}</div>
+                        <span className={cn("text-sm", proStatut === s.id ? "font-semibold" : "text-foreground/80")}>{s.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {showErr && !proStatut && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
+                </div>
+
+                {proStatut === "associe" && (
+                  <div className="mb-4 pl-4 border-l-2 border-primary/20">
+                    <InputField label="Détention" placeholder="ex : 30 % ou 150 parts sur 500" value={proPartsDetail} onChange={setProPartsDetail} required={false} />
+                  </div>
+                )}
+                {proStatut === "employe" && (
+                  <div className="mb-4 pl-4 border-l-2 border-primary/20">
+                    <InputField label="Poste occupé" placeholder="ex : Directeur d'investissement" value={proPoste} onChange={setProPoste}
+                      error={showErr && !proPoste.trim() ? "Obligatoire" : null} />
+                  </div>
+                )}
+
                 <InputField label="Téléphone" placeholder="06 XX XX XX XX" value={proPhone} onChange={setProPhone} required={false} />
                 <InputField label="Ville" placeholder="Paris" value={proCity} onChange={setProCity} required={false} />
 

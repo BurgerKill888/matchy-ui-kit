@@ -153,8 +153,9 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
   const role = isVendeur ? "vendeur" : "acquereur";
 
   // Wizard state
-  const [wizStep, setWizStep] = useState<"opType" | "intro" | "questionnaire" | "confirm">("opType");
+  const [wizStep, setWizStep] = useState<"opType" | "venteType" | "intro" | "questionnaire" | "confirm">("opType");
   const [opType, setOpType] = useState<string | null>(null);
+  const [venteType, setVenteType] = useState<string | null>(null);
   const [qStep, setQStep] = useState(0);
   const [showErr, setShowErr] = useState(false);
 
@@ -238,8 +239,13 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
 
   const anim = { initial: { opacity: 0, x: 30 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -30 }, transition: { duration: 0.25 } };
 
-  const totalSteps = 2 + qLabels.length + 1; // opType + intro + steps + confirm
-  const currentStep = wizStep === "opType" ? 1 : wizStep === "intro" ? 2 : wizStep === "confirm" ? totalSteps : 2 + qStep + 1;
+  const extraSteps = isVendeur ? 1 : 0; // venteType step for vendeur
+  const totalSteps = 2 + extraSteps + qLabels.length + 1; // opType + (venteType) + intro + steps + confirm
+  const currentStep = wizStep === "opType" ? 1 
+    : wizStep === "venteType" ? 2 
+    : wizStep === "intro" ? 2 + extraSteps 
+    : wizStep === "confirm" ? totalSteps 
+    : 2 + extraSteps + qStep + 1;
   const progress = (currentStep / totalSteps) * 100;
 
   const backUrl = isVendeur ? "/listings" : "/criteria";
@@ -286,7 +292,37 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                   {showErr && !opType && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez un type d'opération.</p>}
                   <div className="flex gap-3 mt-6">
                     <Button variant="outline" className="flex-1" onClick={() => navigate(backUrl)}><ArrowLeft className="mr-2" size={16} /> Annuler</Button>
-                    <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, () => setWizStep("intro"))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                    <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, () => setWizStep(isVendeur ? "venteType" : "intro"))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* STEP: Vente type (vendeur only) */}
+            {wizStep === "venteType" && isVendeur && (
+              <motion.div key="venteType" {...anim}>
+                <div className="glass-card rounded-xl p-6 shadow-card">
+                  <h2 className="font-display text-xl font-bold mb-1">Pour quel compte vendez-vous ?</h2>
+                  <p className="text-sm text-muted-foreground mb-6">Précisez si vous vendez un bien qui vous appartient ou si vous agissez pour le compte d'un tiers.</p>
+                  {[
+                    { id: "propre", icon: "🏛️", t: "Vente pour compte propre", d: "Vous êtes propriétaire du bien ou de la structure que vous vendez." },
+                    { id: "tiers", icon: "🤝", t: "Vente pour compte de tiers", d: "Vous agissez en tant que mandataire, agent ou intermédiaire pour un propriétaire." },
+                  ].map(o => (
+                    <button key={o.id} type="button" onClick={() => setVenteType(o.id)}
+                      className={cn("w-full p-4 rounded-xl mb-2 flex items-center gap-4 border-2 transition-all text-left",
+                        venteType === o.id ? "border-primary bg-primary/10" : showErr && !venteType ? "border-destructive/60 bg-secondary/30" : "border-border bg-secondary/30 hover:border-primary/40"
+                      )}>
+                      <div className="text-2xl w-10 text-center">{o.icon}</div>
+                      <div className="flex-1"><div className="text-sm font-bold">{o.t}</div><div className="text-xs text-muted-foreground mt-0.5">{o.d}</div></div>
+                      <div className={cn("w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs",
+                        venteType === o.id ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/40"
+                      )}>{venteType === o.id && <Check size={10} />}</div>
+                    </button>
+                  ))}
+                  {showErr && !venteType && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez un type de vente.</p>}
+                  <div className="flex gap-3 mt-6">
+                    <Button variant="outline" className="flex-1" onClick={() => { setWizStep("opType"); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                    <Button className="flex-1 glow-gold" onClick={() => tryNext(!!venteType, () => setWizStep("intro"))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>
               </motion.div>
@@ -311,7 +347,7 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                   {isVendeur && <InfoBox icon="🔒">L'adresse exacte ne sera jamais publique.</InfoBox>}
                   <InfoBox icon="💾">Progression sauvegardée automatiquement.</InfoBox>
                   <div className="flex gap-3 mt-4">
-                    <Button variant="outline" className="flex-1" onClick={() => { setWizStep("opType"); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => { setWizStep(isVendeur ? "venteType" : "opType"); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
                     <Button className="flex-1 glow-gold" onClick={() => { setWizStep("questionnaire"); setQStep(0); }}>Commencer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>
