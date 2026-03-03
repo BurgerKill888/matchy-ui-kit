@@ -131,17 +131,17 @@ function UploadZone({ label, files, onAdd, onRemove, accept, hint, icon = "📎"
 
 function StepperBar({ current, labels }: { current: number; labels: string[] }) {
   return (
-    <div className="glass-card rounded-xl p-4 mb-6 flex items-center justify-center gap-1 overflow-x-auto">
+    <div className="glass-card rounded-xl p-3 sm:p-4 mb-6 flex items-center justify-center gap-0">
       {labels.map((l, i) => (
-        <div key={i} className="flex items-center">
-          <div className="flex flex-col items-center" style={{ width: 56 }}>
-            <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all",
+        <div key={i} className="flex items-center flex-1 min-w-0">
+          <div className="flex flex-col items-center w-full min-w-0">
+            <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold border-2 transition-all shrink-0",
               i < current ? "bg-primary border-primary text-primary-foreground"
                 : i === current ? "border-primary text-primary bg-primary/10" : "border-muted text-muted-foreground"
-            )}>{i < current ? <Check size={12} /> : i + 1}</div>
-            <div className={cn("text-[8px] mt-1 text-center leading-tight", i <= current ? "text-primary font-semibold" : "text-muted-foreground")}>{l}</div>
+            )}>{i < current ? <Check size={10} /> : i + 1}</div>
+            <div className={cn("text-[7px] sm:text-[8px] mt-1 text-center leading-tight truncate w-full px-0.5", i <= current ? "text-primary font-semibold" : "text-muted-foreground")}>{l}</div>
           </div>
-          {i < labels.length - 1 && <div className={cn("w-4 h-0.5 mb-3", i < current ? "bg-primary" : "bg-muted")} />}
+          {i < labels.length - 1 && <div className={cn("w-3 sm:w-4 h-0.5 mb-3 shrink-0", i < current ? "bg-primary" : "bg-muted")} />}
         </div>
       ))}
     </div>
