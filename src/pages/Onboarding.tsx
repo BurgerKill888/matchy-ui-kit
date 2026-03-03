@@ -571,7 +571,7 @@ export default function Onboarding() {
                   Votre identité sur Matchstone : elle permet aux autres membres de vous identifier et de vous faire confiance.
                 </p>
 
-                <InfoBox icon="👤">Le profil professionnel est distinct de vos annonces ou fiches de recherche. Il représente <strong className="text-foreground">qui vous êtes</strong> sur la plateforme.</InfoBox>
+                
 
                 <SectionLabel>Votre activité principale</SectionLabel>
                 <div className="grid grid-cols-2 gap-3 mb-2">
@@ -817,11 +817,6 @@ export default function Onboarding() {
                 </p>
                 <div className="text-5xl mb-4">{activeRole === "vendeur" ? "📋" : "🔍"}</div>
 
-                <InfoBox icon="⚠️">
-                  {activeRole === "vendeur"
-                    ? "Vous allez créer une <strong class='text-foreground'>annonce de vente</strong>, pas modifier votre profil. Votre profil professionnel est déjà enregistré."
-                    : "Vous allez créer une <strong class='text-foreground'>fiche de recherche</strong>, pas modifier votre profil. Votre profil professionnel est déjà enregistré."}
-                </InfoBox>
 
                 <div className="flex justify-center gap-10 mb-8">
                   {[{ n: String(qLabels.length), l: "étapes" }, { n: "~5", l: "minutes" }, { n: "100%", l: "obligatoire" }].map(s => (
