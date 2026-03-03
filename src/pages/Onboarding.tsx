@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ArrowLeft, ArrowRight, Check, Upload, X, Loader2 } from "lucide-react";
+import { Building2, ArrowLeft, ArrowRight, Check, Upload, X, Loader2, Briefcase, TrendingUp, Home, PiggyBank, Landmark, Shield, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,17 @@ const NATURES = ["Résidentiel", "Tertiaire", "Mixte"];
 const STADES = ["En montage", "Permis obtenu", "En commercialisation", "Actif stabilisé"];
 const SUPPORTS = ["SCPI", "OPCI", "Fonds d'investissement immobilier"];
 const STRATEGIES = ["Rendement", "Valorisation à long terme", "Diversification patrimoniale"];
+
+const PROFILE_TYPES = [
+  { id: "agent", label: "Agent immobilier", desc: "Transaction pour compte de tiers", icon: Briefcase },
+  { id: "marchand", label: "Marchand de biens", desc: "Achat-revente et création de valeur", icon: TrendingUp },
+  { id: "promoteur", label: "Promoteur", desc: "Développement foncier et VEFA", icon: Building2 },
+  { id: "fonciere", label: "Foncière / SCI", desc: "Détention et arbitrage patrimonial", icon: Home },
+  { id: "investisseur", label: "Investisseur", desc: "Investissement structuré", icon: PiggyBank },
+  { id: "banque", label: "Banque / Finance", desc: "Financement et structuration", icon: Landmark },
+  { id: "assureur", label: "Assureur / SCPI", desc: "Fonds immobiliers et gestion", icon: Shield },
+  { id: "notaire", label: "Notaire / Avocat", desc: "Cessions et conseil juridique", icon: Scale },
+];
 
 /* ========== PRIMITIVES ========== */
 function InfoBox({ children, icon = "ℹ️" }: { children: React.ReactNode; icon?: string }) {
@@ -167,11 +178,18 @@ export default function Onboarding() {
   const [authCompany, setAuthCompany] = useState("");
   const [authSubmitted, setAuthSubmitted] = useState(false);
 
-  const [step, setStep] = useState(0); // 0=profil,1=operation,2=intro,3=questionnaire,4=confirm
+  // Steps: 0=profil pro, 1=action métier, 2=opération, 3=intro, 4=questionnaire, 5=confirm
+  const [step, setStep] = useState(0);
   const [qStep, setQStep] = useState(0);
   const [showErr, setShowErr] = useState(false);
 
-  // Core
+  // Step 0: Professional profile
+  const [proType, setProType] = useState("");
+  const [proCompany, setProCompany] = useState("");
+  const [proSiret, setProSiret] = useState("");
+  const [proFunction, setProFunction] = useState("");
+
+  // Step 1: Action métier (vendeur/acquéreur)
   const [roles, setRoles] = useState<string[]>([]);
   const [opType, setOpType] = useState<string | null>(null);
   const [activeRole, setActiveRole] = useState<string | null>(null);
@@ -237,7 +255,7 @@ export default function Onboarding() {
   const addFakeDoc = (setter: React.Dispatch<React.SetStateAction<{ name: string; size: string; icon: string }[]>>) =>
     setter(p => [...p, { name: `document_${p.length + 1}.pdf`, size: "1.1 MB", icon: "📄" }]);
 
-  // Dynamic labels
+  // Dynamic labels for questionnaire sub-steps
   const getQLabels = (): string[] => {
     if (activeRole === "vendeur") {
       if (opType === "actif") return ["Typologie", "Surfaces", "Urbanisme", "État", "Prix", "Localisation", "Photos", "Data Room"];
@@ -250,9 +268,13 @@ export default function Onboarding() {
     }
   };
   const qLabels = getQLabels();
-  const totalSteps = 3 + qLabels.length + 1;
-  const currentStep = step <= 2 ? step + 1 : step === 4 ? totalSteps : 3 + qStep + 1;
-  const currentLabel = step === 0 ? "Profil" : step === 1 ? "Opération" : step === 2 ? "Introduction" : step === 4 ? "Confirmation" : qLabels[qStep];
+
+  // Progress: profil pro + action + opération + intro + questionnaire steps + confirm
+  const topLevelSteps = 4; // profil pro, action, opération, intro
+  const totalSteps = topLevelSteps + qLabels.length + 1; // +1 for confirm
+  const currentStep = step <= 3 ? step + 1 : step === 5 ? totalSteps : topLevelSteps + qStep + 1;
+  const stepLabels = ["Profil pro", "Action", "Opération", "Introduction"];
+  const currentLabel = step <= 3 ? stepLabels[step] : step === 5 ? "Confirmation" : qLabels[qStep];
   const progress = (currentStep / totalSteps) * 100;
 
   const handleFinish = () => {
@@ -260,7 +282,7 @@ export default function Onboarding() {
     if (roles.length === 2 && roles.indexOf(activeRole!) === 0) {
       setActiveRole(roles[1]);
       setOpType(null);
-      setStep(1);
+      setStep(2); // back to operation type for second role
       setQStep(0);
       setShowErr(false);
       return;
@@ -270,8 +292,8 @@ export default function Onboarding() {
     navigate("/dashboard", { replace: true });
   };
 
-  const goQNext = () => { if (qStep < qLabels.length - 1) setQStep(qStep + 1); else setStep(4); };
-  const goQBack = () => { setShowErr(false); if (qStep > 0) setQStep(qStep - 1); else setStep(2); };
+  const goQNext = () => { if (qStep < qLabels.length - 1) setQStep(qStep + 1); else setStep(5); };
+  const goQBack = () => { setShowErr(false); if (qStep > 0) setQStep(qStep - 1); else setStep(3); };
 
   const anim = { initial: { opacity: 0, x: 30 }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -30 }, transition: { duration: 0.25 } };
 
@@ -280,7 +302,6 @@ export default function Onboarding() {
     setAuthSubmitted(true);
     if (!authEmail || !authPassword) return;
     setAuthLoading(true);
-    // Fictif : pas de vraie auth pour le moment
     setTimeout(() => {
       setAuthLoading(false);
       setAuthDone(true);
@@ -317,7 +338,7 @@ export default function Onboarding() {
     }
   };
 
-  // If auth not done, show auth gate
+  // ==================== AUTH GATE ====================
   if (!authDone) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
@@ -335,8 +356,11 @@ export default function Onboarding() {
             {authView === "login" && (
               <motion.div key="login" {...anim} className="w-full max-w-md">
                 <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
-                  <h1 className="font-display text-2xl font-bold mb-1">Connexion</h1>
-                  <p className="text-sm text-muted-foreground mb-6">Accédez à votre compte Matchstone.</p>
+                  <div className="text-center mb-6">
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 1 sur 3 · Connexion</span>
+                    <h1 className="font-display text-2xl font-bold mb-1">Connexion</h1>
+                    <p className="text-sm text-muted-foreground">Accédez à votre compte Matchstone.</p>
+                  </div>
                   <form onSubmit={handleLogin} className="space-y-5">
                     <div>
                       <Label htmlFor="auth-email">Email <span className="text-destructive">*</span></Label>
@@ -382,8 +406,11 @@ export default function Onboarding() {
             {authView === "register" && (
               <motion.div key="register" {...anim} className="w-full max-w-md">
                 <div className="bg-card rounded-2xl border border-border p-8 shadow-xl">
-                  <h1 className="font-display text-2xl font-bold mb-1">Créer un compte</h1>
-                  <p className="text-sm text-muted-foreground mb-6">Rejoignez Matchstone et accédez au matching immobilier.</p>
+                  <div className="text-center mb-6">
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 1 sur 3 · Créer un compte</span>
+                    <h1 className="font-display text-2xl font-bold mb-1">Créer un compte</h1>
+                    <p className="text-sm text-muted-foreground">Accès technique à la plateforme Matchstone.</p>
+                  </div>
                   <form onSubmit={handleRegister} className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -398,11 +425,6 @@ export default function Onboarding() {
                           className={cn("mt-1.5 bg-background border-border", authSubmitted && !authLastName && "border-destructive ring-destructive/30 ring-2")} />
                         {authSubmitted && !authLastName && <p className="text-xs text-destructive mt-1">⚠ Obligatoire</p>}
                       </div>
-                    </div>
-                    <div>
-                      <Label>Société <span className="text-[10px] text-muted-foreground font-normal">(facultatif)</span></Label>
-                      <Input placeholder="Nom de votre entreprise" value={authCompany} onChange={e => setAuthCompany(e.target.value)}
-                        className="mt-1.5 bg-background border-border" />
                     </div>
                     <div>
                       <Label>Email <span className="text-destructive">*</span></Label>
@@ -461,6 +483,7 @@ export default function Onboarding() {
     );
   }
 
+  // ==================== ONBOARDING STEPS ====================
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/50 bg-background/90 backdrop-blur-xl">
@@ -480,16 +503,83 @@ export default function Onboarding() {
       <div className="max-w-[600px] mx-auto px-5 py-8">
         <AnimatePresence mode="wait">
 
-          {/* STEP 0: Profile */}
+          {/* ==================== STEP 0: Profil professionnel ==================== */}
           {step === 0 && (
-            <motion.div key="profile" {...anim}>
+            <motion.div key="profil-pro" {...anim}>
               <div className="glass-card rounded-xl p-6 shadow-card">
-                <h2 className="font-display text-xl font-bold mb-1">Comment souhaitez-vous utiliser Matchstone ?</h2>
-                <p className="text-sm text-muted-foreground mb-6">Vous pourrez toujours activer l'autre profil plus tard.</p>
+                <div className="text-center mb-2">
+                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 2 sur 3 · Profil professionnel</span>
+                </div>
+                <h2 className="font-display text-xl font-bold mb-1">Complétez votre profil professionnel</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Votre identité sur Matchstone : elle permet aux autres membres de vous identifier et de vous faire confiance.
+                </p>
+
+                <InfoBox icon="👤">Le profil professionnel est distinct de vos annonces ou fiches de recherche. Il représente <strong className="text-foreground">qui vous êtes</strong> sur la plateforme.</InfoBox>
+
+                <SectionLabel>Votre activité principale</SectionLabel>
+                <div className="grid grid-cols-2 gap-3 mb-2">
+                  {PROFILE_TYPES.map((p) => {
+                    const selected = proType === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setProType(p.id)}
+                        className={cn(
+                          "relative flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 text-center group",
+                          selected
+                            ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
+                            : "border-border bg-secondary/30 hover:border-primary/40 hover:bg-secondary/60"
+                        )}
+                      >
+                        {selected && (
+                          <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                            <Check size={12} className="text-primary-foreground" />
+                          </div>
+                        )}
+                        <div className={cn(
+                          "w-10 h-10 rounded-lg flex items-center justify-center transition-colors",
+                          selected ? "bg-primary/20" : "bg-muted"
+                        )}>
+                          <p.icon size={20} className={cn(selected ? "text-primary" : "text-muted-foreground")} />
+                        </div>
+                        <span className={cn("font-semibold text-sm", selected && "text-primary")}>{p.label}</span>
+                        <span className="text-xs text-muted-foreground leading-tight">{p.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {showErr && !proType && <p className="text-xs text-destructive mb-3">⚠ Sélectionnez votre activité principale.</p>}
+
+                <SectionLabel>Informations société</SectionLabel>
+                <InputField label="Nom de la société" placeholder="ex : SCI Patrimoine" value={proCompany} onChange={setProCompany} error={showErr && !proCompany ? "Obligatoire" : null} />
+                <InputField label="SIRET" placeholder="ex : 123 456 789 00012" value={proSiret} onChange={setProSiret} required={false} />
+                <InputField label="Fonction / Poste" placeholder="ex : Directeur associé" value={proFunction} onChange={setProFunction} error={showErr && !proFunction ? "Obligatoire" : null} />
+
+                <Button className="w-full glow-gold mt-4" onClick={() => tryNext(!!(proType && proCompany && proFunction), () => setStep(1))}>
+                  Continuer <ArrowRight className="ml-2" size={16} />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ==================== STEP 1: Action métier ==================== */}
+          {step === 1 && (
+            <motion.div key="action-metier" {...anim}>
+              <div className="glass-card rounded-xl p-6 shadow-card">
+                <div className="text-center mb-2">
+                  <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 mb-4">Étape 3 sur 3 · Action métier</span>
+                </div>
+                <h2 className="font-display text-xl font-bold mb-1">Que souhaitez-vous faire ?</h2>
+                <p className="text-sm text-muted-foreground mb-6">Choisissez votre première action. Vous pourrez toujours en ajouter d'autres plus tard.</p>
+
+                <InfoBox icon="💡">Votre profil professionnel est enregistré. Vous allez maintenant créer votre première <strong className="text-foreground">annonce vendeur</strong> ou <strong className="text-foreground">fiche de recherche acquéreur</strong>.</InfoBox>
+
                 <div className="flex gap-4 mb-4">
                   {[
-                    { id: "vendeur", icon: "🏢", t: "Vendeur", d: "Publiez vos biens et recevez des acquéreurs qualifiés" },
-                    { id: "acquereur", icon: "🔍", t: "Acquéreur", d: "Définissez vos critères et recevez des opportunités ciblées" },
+                    { id: "vendeur", icon: "🏢", t: "Créer une annonce vendeur", d: "Publiez un bien à vendre et recevez des acquéreurs qualifiés" },
+                    { id: "acquereur", icon: "🔍", t: "Créer une fiche acquéreur", d: "Définissez vos critères de recherche et recevez des opportunités ciblées" },
                   ].map(r => (
                     <button key={r.id} type="button" onClick={() => toggleArr(roles, setRoles, r.id)}
                       className={cn("flex-1 p-5 rounded-xl text-center border-2 transition-all duration-200",
@@ -503,18 +593,21 @@ export default function Onboarding() {
                     </button>
                   ))}
                 </div>
-                {showErr && roles.length === 0 && <p className="text-xs text-destructive mb-3">⚠ Sélectionnez au moins un profil.</p>}
-                {roles.length === 2 && <InfoBox icon="💡">Vous remplirez d'abord le profil Vendeur, puis le profil Acquéreur.</InfoBox>}
-                <Button className="w-full glow-gold" onClick={() => tryNext(roles.length > 0, () => {
-                  setActiveRole(roles.includes("vendeur") ? "vendeur" : "acquereur");
-                  setStep(1);
-                })}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                {showErr && roles.length === 0 && <p className="text-xs text-destructive mb-3">⚠ Sélectionnez au moins une action.</p>}
+                {roles.length === 2 && <InfoBox icon="💡">Vous remplirez d'abord l'annonce vendeur, puis la fiche acquéreur.</InfoBox>}
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep(0)}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                  <Button className="flex-1 glow-gold" onClick={() => tryNext(roles.length > 0, () => {
+                    setActiveRole(roles.includes("vendeur") ? "vendeur" : "acquereur");
+                    setStep(2);
+                  })}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                </div>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 1: Operation type */}
-          {step === 1 && (
+          {/* ==================== STEP 2: Type d'opération ==================== */}
+          {step === 2 && (
             <motion.div key="operation" {...anim}>
               <div className="glass-card rounded-xl p-6 shadow-card">
                 <h2 className="font-display text-xl font-bold mb-1">Quel type d'opération ?</h2>
@@ -537,20 +630,33 @@ export default function Onboarding() {
                 ))}
                 {showErr && !opType && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez un type d'opération.</p>}
                 <div className="flex gap-3 mt-6">
-                  <Button variant="outline" className="flex-1" onClick={() => setStep(0)}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                  <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, () => setStep(2))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                  <Button variant="outline" className="flex-1" onClick={() => setStep(1)}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                  <Button className="flex-1 glow-gold" onClick={() => tryNext(!!opType, () => setStep(3))}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 2: Intro */}
-          {step === 2 && (
+          {/* ==================== STEP 3: Introduction ==================== */}
+          {step === 3 && (
             <motion.div key="intro" {...anim}>
               <div className="glass-card rounded-xl p-6 shadow-card text-center">
-                <h2 className="font-display text-xl font-bold mb-1">{activeRole === "vendeur" ? "Publier votre bien" : "Créer votre fiche de recherche"}</h2>
-                <p className="text-sm text-muted-foreground mb-6">{activeRole === "vendeur" ? "Renseignez les informations pour être mis en relation avec des acquéreurs qualifiés." : "Définissez vos critères pour recevoir des opportunités pertinentes."}</p>
+                <h2 className="font-display text-xl font-bold mb-1">
+                  {activeRole === "vendeur" ? "Créer votre annonce vendeur" : "Créer votre fiche de recherche acquéreur"}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {activeRole === "vendeur"
+                    ? "Renseignez les informations de votre bien pour être mis en relation avec des acquéreurs qualifiés."
+                    : "Définissez vos critères pour recevoir des opportunités pertinentes."}
+                </p>
                 <div className="text-5xl mb-4">{activeRole === "vendeur" ? "📋" : "🔍"}</div>
+
+                <InfoBox icon="⚠️">
+                  {activeRole === "vendeur"
+                    ? "Vous allez créer une <strong class='text-foreground'>annonce de vente</strong>, pas modifier votre profil. Votre profil professionnel est déjà enregistré."
+                    : "Vous allez créer une <strong class='text-foreground'>fiche de recherche</strong>, pas modifier votre profil. Votre profil professionnel est déjà enregistré."}
+                </InfoBox>
+
                 <div className="flex justify-center gap-10 mb-8">
                   {[{ n: String(qLabels.length), l: "étapes" }, { n: "~5", l: "minutes" }, { n: "100%", l: "obligatoire" }].map(s => (
                     <div key={s.l} className="text-center">
@@ -563,15 +669,15 @@ export default function Onboarding() {
                 {activeRole === "vendeur" && <InfoBox icon="🔒">L'adresse exacte ne sera jamais publique.</InfoBox>}
                 <InfoBox icon="💾">Progression sauvegardée automatiquement.</InfoBox>
                 <div className="flex gap-3 mt-4">
-                  <Button variant="outline" className="flex-1" onClick={() => { setStep(1); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                  <Button className="flex-1 glow-gold" onClick={() => { setStep(3); setQStep(0); }}>Commencer <ArrowRight className="ml-2" size={16} /></Button>
+                  <Button variant="outline" className="flex-1" onClick={() => { setStep(2); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                  <Button className="flex-1 glow-gold" onClick={() => { setStep(4); setQStep(0); }}>Commencer <ArrowRight className="ml-2" size={16} /></Button>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* STEP 3: Questionnaire */}
-          {step === 3 && (
+          {/* ==================== STEP 4: Questionnaire ==================== */}
+          {step === 4 && (
             <motion.div key={`q-${activeRole}-${opType}-${qStep}`} {...anim}>
               <StepperBar current={qStep} labels={qLabels} />
 
@@ -583,7 +689,7 @@ export default function Onboarding() {
                   {TYPOS_ACTIF.map(t => <CheckItem key={t} label={t} checked={vTypo.includes(t)} onClick={() => toggleArr(vTypo, setVTypo, t)} />)}
                   {showErr && !vTypo.length && <p className="text-xs text-destructive mt-2">⚠ Sélectionnez au moins une typologie.</p>}
                   <div className="flex gap-3 mt-6">
-                    <Button variant="outline" className="flex-1" onClick={() => { setStep(2); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
+                    <Button variant="outline" className="flex-1" onClick={() => { setStep(3); setShowErr(false); }}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
                     <Button className="flex-1 glow-gold" onClick={() => tryNext(vTypo.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
@@ -593,39 +699,31 @@ export default function Onboarding() {
                   <p className="text-sm text-muted-foreground mb-4">Données exactes, pas d'approximation.</p>
                   <InfoBox icon="📐">Ces données servent directement au matching.</InfoBox>
                   <InputField label="Surface bâtie totale" type="number" placeholder="ex : 250" value={vSurfB} onChange={setVSurfB} suffix="m²" error={showErr && !vSurfB ? "Obligatoire" : null} />
-                  <InputField label="Surface du terrain" type="number" placeholder="ex : 800" value={vSurfT} onChange={setVSurfT} suffix="m²" error={showErr && !vSurfT ? "Obligatoire" : showErr && vSurfB && vSurfT && +vSurfT < +vSurfB ? "Ne peut être < surface bâtie" : null} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <InputField label="Nombre de niveaux" type="number" placeholder="ex : 3" value={vNiv} onChange={setVNiv} error={showErr && !vNiv ? "Obligatoire" : null} />
-                    <InputField label="Nombre de lots" type="number" placeholder="ex : 6" value={vLots} onChange={setVLots} error={showErr && !vLots ? "Obligatoire" : null} />
-                  </div>
+                  <InputField label="Surface terrain" type="number" placeholder="ex : 500" value={vSurfT} onChange={setVSurfT} suffix="m²" error={showErr && !vSurfT ? "Obligatoire" : null} />
+                  <InputField label="Nombre de niveaux" type="number" placeholder="ex : 3" value={vNiv} onChange={setVNiv} required={false} />
+                  <InputField label="Nombre de lots" type="number" placeholder="ex : 6" value={vLots} onChange={setVLots} required={false} />
                   <div className="flex gap-3 mt-6">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                    <Button className="flex-1 glow-gold" onClick={() => tryNext(!!(vSurfB && vSurfT && vNiv && vLots) && +vSurfT >= +vSurfB, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                    <Button className="flex-1 glow-gold" onClick={() => tryNext(!!(vSurfB && vSurfT), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
 
                 {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">C/ Urbanisme & potentiel</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Qualifie le potentiel pour les acquéreurs professionnels.</p>
-                  <RadioGroup label="Constructible ?" options={["Oui", "Partiellement", "À étudier"]} value={vConst} onChange={setVConst} error={showErr && !vConst ? "Obligatoire" : null} />
-                  <RadioGroup label="Division possible ?" options={["Oui", "Non", "À étudier"]} value={vDiv} onChange={setVDiv} error={showErr && !vDiv ? "Obligatoire" : null} />
-                  <SectionLabel>Compléments</SectionLabel>
-                  <InputField label="Zonage PLU" placeholder="UB, AU, N..." value={vPLU} onChange={setVPLU} required={false} />
-                  <div className="grid grid-cols-2 gap-4">
-                    <InputField label="Emprise au sol" placeholder="60" value={vEmp} onChange={setVEmp} suffix="%" required={false} />
-                    <InputField label="Hauteur autorisée" placeholder="12" value={vHaut} onChange={setVHaut} suffix="m" required={false} />
-                  </div>
-                  <SectionLabel>Visibilité</SectionLabel>
-                  <InfoBox icon="👁️"><strong className="text-foreground">Promoteurs</strong> : voient si constructible/potentiel. <strong className="text-foreground">Marchands de biens</strong> : voient si divisible/potentiel.</InfoBox>
-                  <div className="flex gap-3 mt-4">
+                  <h2 className="font-display text-xl font-bold mb-1">C/ Données d'urbanisme</h2>
+                  <RadioGroup label="Constructible" options={["Oui", "Non", "Partiellement"]} value={vConst} onChange={setVConst} error={showErr && !vConst ? "Obligatoire" : null} />
+                  <RadioGroup label="Divisible" options={["Oui", "Non", "Sous conditions"]} value={vDiv} onChange={setVDiv} error={showErr && !vDiv ? "Obligatoire" : null} />
+                  <InputField label="Zone PLU" placeholder="ex : UB2" value={vPLU} onChange={setVPLU} required={false} />
+                  <InputField label="Emprise au sol max" placeholder="ex : 70" value={vEmp} onChange={setVEmp} suffix="%" required={false} />
+                  <InputField label="Hauteur max" placeholder="ex : 12" value={vHaut} onChange={setVHaut} suffix="m" required={false} />
+                  <div className="flex gap-3 mt-6">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
                     <Button className="flex-1 glow-gold" onClick={() => tryNext(!!(vConst && vDiv), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
 
                 {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">D/ État du bâti</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Un seul choix.</p>
+                  <h2 className="font-display text-xl font-bold mb-1">D/ État du bien</h2>
+                  <p className="text-sm text-muted-foreground mb-5">Évaluation honnête de l'état actuel.</p>
                   {ETATS.map(e => <CheckItem key={e} label={e} sub={ETAT_SUBS[e]} checked={vEtat === e} onClick={() => setVEtat(e)} multi={false} />)}
                   {showErr && !vEtat && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                   <div className="flex gap-3 mt-6">
@@ -635,12 +733,10 @@ export default function Onboarding() {
                 </div>}
 
                 {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">E/ Prix</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Prix de vente et conditions.</p>
-                  <InputField label="Prix demandé" type="number" placeholder="450000" value={vPrix} onChange={setVPrix} suffix="€" error={showErr && !vPrix ? "Obligatoire" : null} />
-                  <RadioGroup label="Conditions" options={["Prix ferme", "Négociable", "Off-market"]} value={vCond} onChange={setVCond} error={showErr && !vCond ? "Obligatoire" : null} />
-                  {vCond === "Off-market" && <InfoBox icon="🔒">Prix non visible. Les acquéreurs matchés verront uniquement que le bien entre dans leur budget.</InfoBox>}
-                  <div className="flex gap-3 mt-4">
+                  <h2 className="font-display text-xl font-bold mb-1">E/ Prix & conditions</h2>
+                  <InputField label="Prix de vente" type="number" placeholder="2500000" value={vPrix} onChange={setVPrix} suffix="€" error={showErr && !vPrix ? "Obligatoire" : null} />
+                  <RadioGroup label="Condition de vente" options={["Prix ferme", "Négociable", "Offres acceptées"]} value={vCond} onChange={setVCond} error={showErr && !vCond ? "Obligatoire" : null} />
+                  <div className="flex gap-3 mt-6">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
                     <Button className="flex-1 glow-gold" onClick={() => tryNext(!!(vPrix && vCond), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
@@ -648,10 +744,9 @@ export default function Onboarding() {
 
                 {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
                   <h2 className="font-display text-xl font-bold mb-1">F/ Localisation</h2>
-                  <p className="text-sm text-muted-foreground mb-4">Où se situe le bien ?</p>
-                  <InfoBox icon="🔒">L'adresse reste confidentielle.</InfoBox>
-                  <InputField label="Adresse ou point GPS" placeholder="12 rue de la Paix, 75002" value={vAdr} onChange={setVAdr} error={showErr && !vAdr ? "Obligatoire" : null} />
-                  <InputField label="Ville / Code postal" placeholder="Paris 75002" value={vVille} onChange={setVVille} error={showErr && !vVille ? "Obligatoire" : null} />
+                  <InfoBox icon="🔒">L'adresse exacte ne sera jamais affichée publiquement.</InfoBox>
+                  <InputField label="Adresse complète" placeholder="12 rue de la Paix, 75002 Paris" value={vAdr} onChange={setVAdr} error={showErr && !vAdr ? "Obligatoire" : null} />
+                  <InputField label="Ville" placeholder="Paris" value={vVille} onChange={setVVille} error={showErr && !vVille ? "Obligatoire" : null} />
                   <div className="h-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-sm mb-4">🗺️ Aperçu carte</div>
                   <div className="flex gap-3 mt-4">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
@@ -661,27 +756,20 @@ export default function Onboarding() {
 
                 {qStep === 6 && <div className="glass-card rounded-xl p-6 shadow-card">
                   <h2 className="font-display text-xl font-bold mb-1">G/ Photos du bien</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Ajoutez des photos pour améliorer la visibilité de votre annonce.</p>
-                  <UploadZone label="Photos" files={vPhotos} onAdd={addFakePhoto} onRemove={i => setVPhotos(p => p.filter((_, j) => j !== i))}
-                    accept="JPG, PNG, WEBP — Max 10 Mo par fichier" hint="Minimum 3 photos recommandées. Maximum 20." icon="🖼️" />
-                  {showErr && vPhotos.length < 1 && <p className="text-xs text-destructive">⚠ Ajoutez au moins une photo.</p>}
-                  <InfoBox icon="💡">Des photos de qualité augmentent significativement l'intérêt des acquéreurs.</InfoBox>
+                  <UploadZone label="Photos" files={vPhotos} onAdd={addFakePhoto} onRemove={i => setVPhotos(p => p.filter((_, j) => j !== i))} accept="JPG, PNG, WEBP" hint="Min. 3 photos recommandées, max. 20." icon="📸" />
                   <div className="flex gap-3 mt-4">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                    <Button className="flex-1 glow-gold" onClick={() => tryNext(vPhotos.length >= 1, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
+                    <Button className="flex-1 glow-gold" onClick={goQNext}>Continuer <ArrowRight className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
 
                 {qStep === 7 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">H/ Documents Data Room</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Déposez les documents que les acquéreurs autorisés pourront consulter.</p>
-                  <UploadZone label="Documents confidentiels" files={vDocs} onAdd={() => addFakeDoc(setVDocs)} onRemove={i => setVDocs(p => p.filter((_, j) => j !== i))}
-                    accept="PDF, DOC, XLS — Max 50 Mo par fichier" hint="Plans, diagnostics, titre de propriété, baux..." icon="📂" />
-                  <InfoBox icon="🔒">Ces documents ne seront accessibles qu'aux acquéreurs dont vous aurez autorisé l'accès à la Data Room.</InfoBox>
-                  <InfoBox icon="💡">Vous pourrez ajouter ou retirer des documents à tout moment depuis votre espace vendeur.</InfoBox>
+                  <h2 className="font-display text-xl font-bold mb-1">H/ Data Room</h2>
+                  <InfoBox icon="🔒">Ces documents seront accessibles uniquement aux acquéreurs que vous autorisez.</InfoBox>
+                  <UploadZone label="Documents confidentiels" files={vDocs} onAdd={() => addFakeDoc(setVDocs)} onRemove={i => setVDocs(p => p.filter((_, j) => j !== i))} accept="PDF, DOC, XLS" icon="📂" />
                   <div className="flex gap-3 mt-4">
                     <Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button>
-                    <Button className="flex-1 glow-gold" onClick={goQNext}>Valider et publier <Check className="ml-2" size={16} /></Button>
+                    <Button className="flex-1 glow-gold" onClick={goQNext}>Publier l'annonce <Check className="ml-2" size={16} /></Button>
                   </div>
                 </div>}
               </>)}
@@ -689,14 +777,13 @@ export default function Onboarding() {
               {/* ===== VENDEUR PARTS ===== */}
               {activeRole === "vendeur" && opType === "parts" && (<>
                 {qStep === 0 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">A/ Type de structure</h2>
-                  <p className="text-sm text-muted-foreground mb-5">Quelle structure vendez-vous ?</p>
+                  <h2 className="font-display text-xl font-bold mb-1">A/ Structure juridique</h2>
                   {STRUCTURES.map(s => <CheckItem key={s} label={s} checked={vpStruct.includes(s)} onClick={() => toggleArr(vpStruct, setVpStruct, s)} />)}
                   {showErr && !vpStruct.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                   <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(vpStruct.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                 </div>}
                 {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
-                  <h2 className="font-display text-xl font-bold mb-1">B/ Nature des actifs détenus</h2>
+                  <h2 className="font-display text-xl font-bold mb-1">B/ Nature des actifs</h2>
                   {NATURES.map(n => <CheckItem key={n} label={n} checked={vpNature === n} onClick={() => setVpNature(n)} multi={false} />)}
                   {showErr && !vpNature && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                   <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!vpNature, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
@@ -728,7 +815,7 @@ export default function Onboarding() {
                   <h2 className="font-display text-xl font-bold mb-1">G/ Documents Data Room</h2>
                   <UploadZone label="Documents confidentiels" files={vpDocs} onAdd={() => addFakeDoc(setVpDocs)} onRemove={i => setVpDocs(p => p.filter((_, j) => j !== i))} accept="PDF, DOC, XLS" icon="📂" />
                   <InfoBox icon="🔒">Accessibles uniquement aux acquéreurs autorisés.</InfoBox>
-                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={goQNext}>Valider et publier <Check className="ml-2" size={16} /></Button></div>
+                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={goQNext}>Publier l'annonce <Check className="ml-2" size={16} /></Button></div>
                 </div>}
               </>)}
 
@@ -757,7 +844,7 @@ export default function Onboarding() {
                 {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
                   <h2 className="font-display text-xl font-bold mb-1">D/ Documents</h2>
                   <UploadZone label="Documents" files={viDocs} onAdd={() => addFakeDoc(setViDocs)} onRemove={i => setViDocs(p => p.filter((_, j) => j !== i))} accept="PDF, DOC" icon="📂" />
-                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={goQNext}>Valider et publier <Check className="ml-2" size={16} /></Button></div>
+                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={goQNext}>Publier l'annonce <Check className="ml-2" size={16} /></Button></div>
                 </div>}
               </>)}
 
@@ -825,7 +912,7 @@ export default function Onboarding() {
                   <InputField label="Point central (adresse ou GPS)" placeholder="Paris 8e" value={aAdr} onChange={setAAdr} error={showErr && !aAdr ? "Obligatoire" : null} />
                   <RadioGroup label="Rayon de recherche" options={["1 km", "5 km", "10 km", "20 km", "Personnalisé"]} value={aRayon} onChange={setARayon} error={showErr && !aRayon ? "Obligatoire" : null} />
                   <div className="h-24 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground text-sm mb-4">🗺️ Aperçu zone</div>
-                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aAdr && aRayon), goQNext)}>Valider ma recherche <Check className="ml-2" size={16} /></Button></div>
+                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aAdr && aRayon), goQNext)}>Valider ma fiche <Check className="ml-2" size={16} /></Button></div>
                 </div>}
               </>)}
 
@@ -869,7 +956,7 @@ export default function Onboarding() {
                 {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
                   <h2 className="font-display text-xl font-bold mb-1">F/ Zone géographique</h2>
                   <RadioGroup label="Périmètre" options={["France entière", "Zones ciblées"]} value={apLoc || null} onChange={setApLoc} error={showErr && !apLoc ? "Obligatoire" : null} />
-                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!apLoc, goQNext)}>Valider ma recherche <Check className="ml-2" size={16} /></Button></div>
+                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!apLoc, goQNext)}>Valider ma fiche <Check className="ml-2" size={16} /></Button></div>
                 </div>}
               </>)}
 
@@ -904,30 +991,38 @@ export default function Onboarding() {
                 {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
                   <h2 className="font-display text-xl font-bold mb-1">E/ Profil de risque</h2>
                   <RadioGroup label="Risque accepté" options={["Faible", "Modéré", "Dynamique"]} value={aiRisque} onChange={setAiRisque} error={showErr && !aiRisque ? "Obligatoire" : null} />
-                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aiRisque, goQNext)}>Valider ma recherche <Check className="ml-2" size={16} /></Button></div>
+                  <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aiRisque, goQNext)}>Valider ma fiche <Check className="ml-2" size={16} /></Button></div>
                 </div>}
               </>)}
             </motion.div>
           )}
 
-          {/* STEP 4: Confirmation */}
-          {step === 4 && (
+          {/* ==================== STEP 5: Confirmation ==================== */}
+          {step === 5 && (
             <motion.div key="confirm" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}>
               <div className="glass-card rounded-xl p-6 shadow-card text-center">
                 <div className="text-6xl mb-4">✅</div>
-                <h2 className="font-display text-2xl font-bold mb-2">{activeRole === "vendeur" ? "Votre bien est en ligne !" : "Votre fiche de recherche est active !"}</h2>
-                <p className="text-sm text-muted-foreground mb-6">{activeRole === "vendeur" ? "Vous serez notifié dès qu'un acquéreur correspondra." : "Vous serez notifié dès qu'un bien correspondra à vos critères."}</p>
+                <h2 className="font-display text-2xl font-bold mb-2">
+                  {activeRole === "vendeur" ? "Votre annonce est en ligne !" : "Votre fiche de recherche est active !"}
+                </h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {activeRole === "vendeur"
+                    ? "Vous serez notifié dès qu'un acquéreur correspondra à votre annonce."
+                    : "Vous serez notifié dès qu'un bien correspondra à vos critères de recherche."}
+                </p>
 
                 <div className="glass-card rounded-xl p-5 text-left text-sm space-y-2 mb-6">
                   <h3 className="font-display font-bold text-base mb-3 text-foreground">Récapitulatif</h3>
-                  <div><span className="text-muted-foreground">Profil :</span> <span className="font-medium">{activeRole === "vendeur" ? "Vendeur" : "Acquéreur"}</span></div>
+                  <div><span className="text-muted-foreground">Profil professionnel :</span> <span className="font-medium">{PROFILE_TYPES.find(p => p.id === proType)?.label || "—"}</span></div>
+                  <div><span className="text-muted-foreground">Société :</span> <span className="font-medium">{proCompany}</span></div>
+                  <div><span className="text-muted-foreground">Action :</span> <span className="font-medium">{activeRole === "vendeur" ? "Annonce vendeur" : "Fiche acquéreur"}</span></div>
                   <div><span className="text-muted-foreground">Opération :</span> <span className="font-medium">{opType === "actif" ? "Actif immobilier" : opType === "parts" ? "Parts / Société" : "Investissement financier"}</span></div>
                 </div>
 
                 {roles.length === 2 && roles.indexOf(activeRole!) === 0 ? (
                   <>
                     <Button className="w-full glow-gold mb-3" onClick={handleFinish}>
-                      Continuer : créer mon profil {roles[1] === "vendeur" ? "Vendeur" : "Acquéreur"} → <ArrowRight className="ml-2" size={16} />
+                      Continuer : créer {roles[1] === "vendeur" ? "mon annonce vendeur" : "ma fiche acquéreur"} → <ArrowRight className="ml-2" size={16} />
                     </Button>
                     <Button variant="outline" className="w-full" onClick={() => {
                       if (roles.includes("vendeur")) setSpace("vendeur");
