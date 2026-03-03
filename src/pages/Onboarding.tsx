@@ -443,7 +443,7 @@ export default function Onboarding() {
                       <span className="text-xs text-muted-foreground">ou</span>
                       <div className="flex-1 h-px bg-border" />
                     </div>
-                    <Button type="button" variant="outline" className="w-full h-12 text-base font-bold" disabled>
+                    <Button type="button" variant="outline" className="w-full h-12 text-base font-bold border-[#0A66C2] text-[#0A66C2] hover:bg-[#0A66C2]/10" disabled>
                       Continuer avec LinkedIn
                     </Button>
                     <div className="text-center pt-2">
