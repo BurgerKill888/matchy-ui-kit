@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { getTypeColor, typeColors } from "@/lib/propertyTypes";
 import { motion, AnimatePresence } from "framer-motion";
 import { NewMatchModal, StartConversationModal, DeclineMatchModal } from "@/components/modals/MatchActionModals";
+import { DataRoomModals, DataRoomModalType } from "@/components/modals/DataRoomModals";
 
 // --- Types ---
 type Status = "new" | "in_conversation" | "offer_sent" | "expired";
@@ -44,7 +45,7 @@ interface MatchItem {
 
 interface ChatMessage {
   id: number;
-  from: "me" | "them" | "system";
+  from: "me" | "them" | "system" | "dataroom_request";
   text: string;
   time: string;
 }
@@ -63,6 +64,7 @@ const mockMessagesByMatch: Record<number, ChatMessage[]> = {
     { id: 1, from: "them", text: "Bonjour, nous sommes intéressés par votre immeuble mixte. Quelles sont les conditions ?", time: "14:30" },
     { id: 2, from: "me", text: "Bonjour, merci pour votre intérêt. Le bien est disponible immédiatement. Souhaitez-vous planifier une visite ?", time: "14:45" },
     { id: 3, from: "them", text: "Documents reçus, merci.", time: "15:02" },
+    { id: 4, from: "dataroom_request", text: "Foncière Grand Ouest demande l'accès à la Data Room de votre bien.", time: "15:10" },
   ],
   3: [
     { id: 1, from: "them", text: "Bonjour, ce local nous intéresse fortement.", time: "10:00" },
@@ -632,6 +634,7 @@ function ConversationColumn({
   const st = statusConfig[selected.status];
   const isNew = selected.status === "new" && messages.length === 0;
   const [headerDataRoomOpen, setHeaderDataRoomOpen] = useState(false);
+  const [dataRoomModal, setDataRoomModal] = useState<DataRoomModalType>(null);
 
   return (
     <>
@@ -690,10 +693,40 @@ function ConversationColumn({
           )}
 
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : msg.from === "system" ? "justify-center" : "justify-start"}`}>
+            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : msg.from === "system" || msg.from === "dataroom_request" ? "justify-center" : "justify-start"}`}>
               {msg.from === "system" ? (
                 <p className="text-xs text-muted-foreground italic bg-secondary/50 rounded-lg px-3 py-1.5">{msg.text}</p>
-              ) : (
+              ) : msg.from === "dataroom_request" && !isAcquereur ? (
+                <div className="w-full max-w-sm rounded-xl border border-primary/30 bg-primary/5 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <FolderOpen size={14} className="text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold">Demande d'accès Data Room</p>
+                      <p className="text-[10px] text-muted-foreground">{msg.time}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{msg.text}</p>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="flex-1 h-8 text-xs glow-gold"
+                      onClick={() => setDataRoomModal("sell_received")}
+                    >
+                      <Check size={13} className="mr-1" /> Accepter
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                      onClick={() => setDataRoomModal("sell_refuse")}
+                    >
+                      <X size={13} className="mr-1" /> Décliner
+                    </Button>
+                  </div>
+                </div>
+              ) : msg.from === "dataroom_request" && isAcquereur ? null : (
                 <div className={`max-w-[70%] rounded-xl px-4 py-2.5 ${
                   msg.from === "me" ? "bg-primary text-primary-foreground" : "glass-card"
                 }`}>
@@ -717,6 +750,7 @@ function ConversationColumn({
           </div>
         </div>
       )}
+      {!isAcquereur && <DataRoomModals modal={dataRoomModal} onChangeModal={setDataRoomModal} />}
     </>
   );
 }
