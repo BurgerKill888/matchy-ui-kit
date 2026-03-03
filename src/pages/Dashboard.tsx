@@ -173,11 +173,6 @@ function AcquereurDashboard() {
           <p className="text-muted-foreground mt-1 text-sm">Bienvenue dans votre espace acquéreur Matchstone.</p>
         </div>
         <div className="flex gap-2">
-          <Link to="/discovery">
-            <Button className="glow-gold font-medium">
-              <Compass size={15} className="mr-1.5" /> Découvrir
-            </Button>
-          </Link>
           <Link to="/criteria/create">
             <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5">
               <Plus size={15} className="mr-1.5" /> Nouvelle fiche
