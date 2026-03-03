@@ -551,16 +551,19 @@ function MatchListItem({ match, selected, onSelect }: { match: MatchItem; select
   const st = statusConfig[match.status];
   const timerUrgent = match.timerHours > 0 && match.timerHours < 24;
   const isOffmarket = match.priceTag.includes("Off-market");
+  const isNew = match.status === "new";
 
   return (
     <button
       onClick={() => onSelect(match.id)}
-      className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden ${
+      className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden border ${
         selected
-          ? "bg-primary/10 border border-primary/30"
-          : isExpired
-            ? "opacity-50 hover:bg-secondary/50"
-            : "hover:bg-secondary/60"
+          ? "bg-primary/10 border-primary/30"
+          : isNew
+            ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+            : isExpired
+              ? "border-transparent opacity-50 hover:bg-secondary/50"
+              : "border-transparent hover:bg-secondary/60"
       }`}
     >
       <div className="flex">
