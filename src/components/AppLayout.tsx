@@ -71,7 +71,7 @@ function SpaceSwitcher({ collapsed }: { collapsed: boolean }) {
           onClick={handleSwitch}
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition-colors w-full"
         >
-          <div className="w-2 h-2 rounded-full bg-primary glow-gold" />
+          <div className="w-2 h-2 rounded-full bg-info" />
           Passer en {targetLabel}
         </button>
       </PopoverContent>
