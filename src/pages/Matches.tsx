@@ -693,7 +693,7 @@ function ConversationColumn({
           )}
 
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : msg.from === "system" || msg.from === "dataroom_request" ? "justify-center" : "justify-start"}`}>
+            <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : msg.from === "system" ? "justify-center" : "justify-start"}`}>
               {msg.from === "system" ? (
                 <p className="text-xs text-muted-foreground italic bg-secondary/50 rounded-lg px-3 py-1.5">{msg.text}</p>
               ) : msg.from === "dataroom_request" && !isAcquereur ? (
