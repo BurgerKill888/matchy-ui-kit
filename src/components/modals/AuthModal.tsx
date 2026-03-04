@@ -168,8 +168,12 @@ export default function AuthModal({ open, onOpenChange, mode, onModeChange }: Au
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl bg-card border-border p-0 overflow-hidden">
-        {/* Progress bar */}
+        {/* Logo + Progress bar */}
         <div className="px-6 pt-6 pb-2">
+          <div className="flex items-center justify-center gap-2.5 mb-6">
+            <Building2 className="text-primary" size={28} />
+            <span className="font-display text-2xl font-bold tracking-tight">Match<span className="text-primary">stone</span></span>
+          </div>
           <div className="flex items-center justify-between mb-2">
             {REGISTER_STEPS.map((step, i) => (
               <div key={step.number} className="flex items-center flex-1">
