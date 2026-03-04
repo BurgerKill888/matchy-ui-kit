@@ -157,6 +157,17 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
             })}
           </nav>
 
+          {/* Collapse button above bottom section */}
+          <div className={`${collapsed ? 'px-2' : 'px-4'} pb-2`}>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={`hidden md:flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:bg-secondary w-full`}
+            >
+              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+              {!collapsed && <span>Réduire</span>}
+            </button>
+          </div>
+
           {/* Bottom nav */}
           <div className={`${collapsed ? 'p-2' : 'p-4'} border-t border-border flex flex-col gap-1`}>
             {bottomNav.map((item) => {
@@ -183,13 +194,6 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
               return linkContent;
             })}
             <SpaceSwitcher collapsed={collapsed} />
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className={`hidden md:flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:bg-secondary`}
-            >
-              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-              {!collapsed && <span>Réduire</span>}
-            </button>
           </div>
         </aside>
 
