@@ -557,16 +557,19 @@ function MatchListItem({ match, selected, onSelect, isFirstNew = false }: { matc
   return (
     <button
       onClick={() => onSelect(match.id)}
-      className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden border ${
+      className={`w-full text-left rounded-xl transition-all duration-200 overflow-hidden border relative ${
         selected
           ? "bg-primary/10 border-primary/30"
           : isFirstNew
-            ? "border-primary/40 bg-primary/5 ring-1 ring-primary/20"
+            ? "border-primary/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-[0_0_15px_-3px_hsl(var(--primary)/0.3)]"
             : isExpired
               ? "border-transparent opacity-50 hover:bg-secondary/50"
               : "border-transparent hover:bg-secondary/60"
       }`}
     >
+      {isFirstNew && !selected && (
+        <div className="absolute inset-0 rounded-xl animate-pulse-gold pointer-events-none border border-primary/20" />
+      )}
       <div className="flex">
         {/* Image */}
         <div className="relative w-[130px] min-h-[110px] shrink-0 overflow-hidden">
