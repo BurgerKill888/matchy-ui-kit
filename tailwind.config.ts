@@ -95,7 +95,7 @@ export default {
         },
         "pulse-gold": {
           "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.6" },
+          "50%": { opacity: "0.82" },
         },
         "slide-up": {
           from: { opacity: "0", transform: "translateY(20px)" },
@@ -105,7 +105,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-gold": "pulse-gold 2s ease-in-out infinite",
+        "pulse-gold": "pulse-gold 3s ease-in-out infinite",
         "slide-up": "slide-up 0.5s ease-out",
       },
     },
