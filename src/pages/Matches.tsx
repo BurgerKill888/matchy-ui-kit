@@ -561,15 +561,12 @@ function MatchListItem({ match, selected, onSelect, isFirstNew = false }: { matc
         selected
           ? "bg-primary/10 border-primary/30"
           : isFirstNew
-            ? "border-primary/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-[0_0_15px_-3px_hsl(var(--primary)/0.3)]"
+            ? "border-primary/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent ring-1 ring-primary/30 shadow-[0_0_15px_-3px_hsl(var(--primary)/0.3)] animate-pulse-gold"
             : isExpired
               ? "border-transparent opacity-50 hover:bg-secondary/50"
               : "border-transparent hover:bg-secondary/60"
       }`}
     >
-      {isFirstNew && !selected && (
-        <div className="absolute inset-0 rounded-xl animate-pulse-gold pointer-events-none border border-primary/20" />
-      )}
       <div className="flex">
         {/* Image */}
         <div className="relative w-[130px] min-h-[110px] shrink-0 overflow-hidden">
