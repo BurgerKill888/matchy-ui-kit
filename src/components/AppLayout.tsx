@@ -116,15 +116,8 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 ${collapsed ? 'w-14' : 'w-60'} h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-200 flex flex-col`}>
-          {/* Collapse toggle at top */}
-          <div className={`${collapsed ? 'p-2' : 'px-4 pt-3 pb-1'} flex ${collapsed ? 'justify-center' : 'justify-end'}`}>
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="hidden md:flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary p-1.5"
-            >
-              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-            </button>
-          </div>
+          {/* Spacer for top */}
+          <div className="pt-3" />
 
           <nav className={`flex flex-col gap-1 ${collapsed ? 'p-2' : 'px-4 pb-4'} flex-1`}>
             {navItems.map((item) => {
@@ -190,6 +183,13 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
               return linkContent;
             })}
             <SpaceSwitcher collapsed={collapsed} />
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={`hidden md:flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground transition-colors hover:bg-secondary`}
+            >
+              {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+              {!collapsed && <span>Réduire</span>}
+            </button>
           </div>
         </aside>
 
