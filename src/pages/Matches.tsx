@@ -203,7 +203,7 @@ export default function Matches() {
       <AppLayout>
         <AnimatePresence mode="wait">
           {mobileView === "list" && (
-            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-[calc(100vh-3.5rem-3.5rem)] flex flex-col">
               <MatchListColumn
                 filter={filter} setFilter={setFilter} counts={counts}
                 typeFilter={typeFilter} setTypeFilter={setTypeFilter}
@@ -214,7 +214,7 @@ export default function Matches() {
             </motion.div>
           )}
           {mobileView === "chat" && selected && (
-            <motion.div key="chat" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+            <motion.div key="chat" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-3.5rem-3.5rem)] flex flex-col">
               <div className="p-2 border-b border-border flex items-center gap-2">
                 <Button variant="ghost" size="sm" onClick={() => setMobileView("list")}>← Retour</Button>
                 <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setMobileView("details")}>
@@ -225,7 +225,7 @@ export default function Matches() {
             </motion.div>
           )}
           {mobileView === "details" && selected && (
-            <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-4rem)] flex flex-col">
+            <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="h-[calc(100vh-3.5rem-3.5rem)] flex flex-col">
               <div className="p-2 border-b border-border">
                 <Button variant="ghost" size="sm" onClick={() => setMobileView("chat")}>← Conversation</Button>
               </div>
@@ -569,7 +569,7 @@ function MatchListItem({ match, selected, onSelect, isFirstNew = false }: { matc
     >
       <div className="flex">
         {/* Image */}
-        <div className="relative w-[130px] min-h-[110px] shrink-0 overflow-hidden">
+        <div className="relative w-[100px] sm:w-[130px] min-h-[100px] sm:min-h-[110px] shrink-0 overflow-hidden">
           <img src={match.image} alt={match.property} className="w-full h-full object-cover" />
           <div className="absolute bottom-1.5 right-1.5 bg-black/50 rounded px-1.5 py-0.5 text-[9px] text-white/70 flex items-center gap-0.5">
             4 <ImageIcon size={9} />
@@ -639,40 +639,40 @@ function ConversationColumn({
   return (
     <>
       {/* Header */}
-      <div className="border-b border-border p-4 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <div>
-            <p className="font-semibold text-sm">{selected.counterpart}</p>
+      <div className="border-b border-border p-3 sm:p-4 flex items-center justify-between shrink-0 gap-2">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="min-w-0">
+            <p className="font-semibold text-sm truncate">{selected.counterpart}</p>
             <div className="flex items-center gap-2 mt-0.5">
               <Badge variant={st.variant} className="text-[10px] h-4 px-1.5">{st.label}</Badge>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-wrap justify-end">
           {showDetailsBtn && (
             <Button variant="outline" size="sm" className="text-xs h-7" onClick={onShowDetails}>
-              <Info size={12} className="mr-1" /> Détails de l'annonce
+              <Info size={12} className="sm:mr-1" /> <span className="hidden sm:inline">Détails</span>
             </Button>
           )}
           {isAcquereur && (
             selected.dataRoomAccess ? (
               <Link to="/dataroom">
                 <Button variant="outline" size="sm" className="text-xs h-7">
-                  <FolderOpen size={12} className="mr-1" /> Data Room
+                  <FolderOpen size={12} className="sm:mr-1" /> <span className="hidden sm:inline">Data Room</span>
                 </Button>
               </Link>
             ) : (
               <>
                 <Button variant="outline" size="sm" className="text-xs h-7" onClick={() => setHeaderDataRoomOpen(true)}>
-                  <Lock size={12} className="mr-1" /> Demander accès Data Room
+                  <Lock size={12} className="sm:mr-1" /> <span className="hidden sm:inline">Accès Data Room</span>
                 </Button>
                 <DataRoomRequestModal open={headerDataRoomOpen} onOpenChange={setHeaderDataRoomOpen} propertyName={selected.property} />
               </>
             )
           )}
-          <div className="flex items-center gap-2 bg-primary/15 border border-primary/40 text-primary rounded-lg px-3 py-1.5 animate-pulse-gold">
-            <Clock size={14} />
-            <span className="font-bold text-sm tracking-wide">{selected.timer}</span>
+          <div className="flex items-center gap-1.5 bg-primary/15 border border-primary/40 text-primary rounded-lg px-2 sm:px-3 py-1 sm:py-1.5 animate-pulse-gold">
+            <Clock size={13} />
+            <span className="font-bold text-xs sm:text-sm tracking-wide">{selected.timer}</span>
           </div>
         </div>
       </div>

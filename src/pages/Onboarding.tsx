@@ -574,7 +574,7 @@ export default function Onboarding() {
                 
 
                 <SectionLabel>Votre activité principale</SectionLabel>
-                <div className="grid grid-cols-2 gap-3 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
                   {PROFILE_TYPES.map((p) => {
                     const selected = proType === p.id;
                     return (
@@ -688,13 +688,13 @@ export default function Onboarding() {
 
                 <InfoBox icon="💡">Votre profil professionnel est enregistré. Vous allez maintenant créer votre première <strong className="text-foreground">annonce vendeur</strong> ou <strong className="text-foreground">fiche de recherche acquéreur</strong>.</InfoBox>
 
-                <div className="flex gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                   {[
                     { id: "vendeur", icon: "🏢", t: "Créer une annonce vendeur", d: "Publiez un bien à vendre et recevez des acquéreurs qualifiés" },
                     { id: "acquereur", icon: "🔍", t: "Créer une fiche acquéreur", d: "Définissez vos critères de recherche et recevez des opportunités ciblées" },
                   ].map(r => (
                     <button key={r.id} type="button" onClick={() => toggleArr(roles, setRoles, r.id)}
-                      className={cn("flex-1 p-5 rounded-xl text-center border-2 transition-all duration-200",
+                      className={cn("flex-1 p-4 sm:p-5 rounded-xl text-center border-2 transition-all duration-200",
                         roles.includes(r.id) ? "border-primary bg-primary/10 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
                           : showErr && roles.length === 0 ? "border-destructive/60 bg-secondary/30" : "border-border bg-secondary/30 hover:border-primary/40"
                       )}>

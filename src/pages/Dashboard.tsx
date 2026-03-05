@@ -30,13 +30,13 @@ function KpiCard({ label, value, icon: Icon, delay }: {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="glass-card rounded-xl p-4 space-y-2"
+      className="glass-card rounded-xl p-3 sm:p-4 space-y-1.5 sm:space-y-2"
     >
       <div className="flex items-center gap-2">
         <Icon size={14} className="text-muted-foreground" />
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-[11px] sm:text-xs text-muted-foreground">{label}</span>
       </div>
-      <p className="font-display text-3xl font-bold text-foreground">{value}</p>
+      <p className="font-display text-2xl sm:text-3xl font-bold text-foreground">{value}</p>
     </motion.div>
   );
 }
@@ -57,9 +57,9 @@ function MatchCard({ match, index }: { match: typeof vendeurMatches[0]; index: n
       transition={{ delay: index * 0.08 }}
     >
       <Link to="/matches" className="block">
-        <div className="glass-card rounded-xl overflow-hidden flex group hover:border-white/20 transition-all duration-200">
+        <div className="glass-card rounded-xl overflow-hidden flex flex-col sm:flex-row group hover:border-white/20 transition-all duration-200">
           {/* Image placeholder */}
-          <div className="relative w-[180px] min-h-[130px] bg-gradient-to-br from-secondary to-background flex items-center justify-center shrink-0">
+          <div className="relative w-full sm:w-[180px] h-[140px] sm:h-auto sm:min-h-[130px] bg-gradient-to-br from-secondary to-background flex items-center justify-center shrink-0">
             <span className="text-muted-foreground/20 text-2xl italic font-light">Photo</span>
             <div className="absolute bottom-2 right-2 bg-black/50 rounded px-2 py-0.5 text-[10px] text-white/70 flex items-center gap-1">
               {match.photos} <ImageIcon size={10} />
@@ -123,27 +123,27 @@ function VendeurDashboard() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 max-w-5xl space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Espace Vendeur</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Espace Vendeur</h1>
           <p className="text-muted-foreground mt-1 text-sm">Bienvenue dans votre espace vendeur Matchstone.</p>
         </div>
-        <div className="flex gap-2">
-          <Link to="/onboarding">
-            <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5">
+        <div className="flex gap-2 w-full sm:w-auto">
+          <Link to="/onboarding" className="flex-1 sm:flex-initial">
+            <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5 w-full">
               <ClipboardList size={15} className="mr-1.5" /> Onboarding
             </Button>
           </Link>
-          <Link to="/listings/create">
-            <Button className="glow-gold font-medium">
-              <Plus size={15} className="mr-1.5" /> Publier une annonce
+          <Link to="/listings/create" className="flex-1 sm:flex-initial">
+            <Button className="glow-gold font-medium w-full">
+              <Plus size={15} className="mr-1.5" /> Publier
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 
@@ -166,22 +166,22 @@ function AcquereurDashboard() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-5xl space-y-8">
+    <div className="p-4 sm:p-6 md:p-8 max-w-5xl space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold text-foreground">Espace Acquéreur</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground">Espace Acquéreur</h1>
           <p className="text-muted-foreground mt-1 text-sm">Bienvenue dans votre espace acquéreur Matchstone.</p>
         </div>
         <div className="flex gap-2">
           <Link to="/criteria/create">
-            <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5">
+            <Button variant="outline" className="border-white/20 text-foreground hover:bg-white/5 w-full sm:w-auto">
               <Plus size={15} className="mr-1.5" /> Nouvelle fiche
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {kpis.map((k, i) => <KpiCard key={k.label} {...k} delay={i * 0.05} />)}
       </div>
 

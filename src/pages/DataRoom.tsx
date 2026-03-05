@@ -44,7 +44,7 @@ export default function DataRoom() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-4xl">
+      <div className="p-4 sm:p-6 md:p-8 max-w-4xl">
         <Link to="/acquereur-dataroom" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
           <ArrowLeft size={15} /> Mes Data Rooms
         </Link>
@@ -60,15 +60,15 @@ export default function DataRoom() {
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="divide-y divide-border">
             {documents.map((doc) => (
-              <div key={doc.name} className="flex items-center justify-between p-4 hover:bg-secondary/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <FileText className="text-muted-foreground" size={18} />
-                  <div>
-                    <p className="text-sm font-medium">{doc.name}</p>
+              <div key={doc.name} className="flex items-center justify-between p-3 sm:p-4 hover:bg-secondary/30 transition-colors gap-2">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <FileText className="text-muted-foreground shrink-0" size={18} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{doc.name}</p>
                     <p className="text-xs text-muted-foreground">{doc.size}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   {doc.status === "accessible" && (
                     <>
                       <Badge variant="default" className="text-xs gap-1"><CheckCircle size={10} /> Accessible</Badge>

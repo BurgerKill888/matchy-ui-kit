@@ -174,7 +174,7 @@ export default function ListingDetail() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-4xl space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 max-w-4xl space-y-5 sm:space-y-6">
         <Link to="/listings" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft size={16} /> Retour aux annonces
         </Link>
@@ -230,14 +230,14 @@ export default function ListingDetail() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/dataroom">
-                <Button variant="outline" className="transition-transform duration-200 hover:scale-[1.02]">
+              <Link to="/dataroom" className="block">
+                <Button variant="outline" className="transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">
                   <FolderLock size={16} className="mr-2" /> Accéder à la Data Room
                 </Button>
               </Link>
               {isAcquereur && (
-                <Link to="/messaging">
-                  <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
+                <Link to="/messaging" className="block">
+                  <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">
                     <MessageSquare size={16} className="mr-2" /> Contacter le vendeur
                   </Button>
                 </Link>
@@ -311,9 +311,9 @@ export default function ListingDetail() {
             <Star size={18} className="text-primary" /> Faites connaissance avec le vendeur
           </h2>
 
-          <div className="flex flex-col sm:flex-row gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6">
             {/* Owner card */}
-            <div className="glass-card rounded-xl p-5 flex flex-col items-center text-center sm:w-52 shrink-0 border border-primary/10">
+            <div className="glass-card rounded-xl p-4 sm:p-5 flex flex-col items-center text-center sm:w-52 shrink-0 border border-primary/10">
               <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mb-3 border-2 border-primary/30">
                 <span className="font-display text-xl font-bold text-primary">
                   {listing.owner.name.split(" ").map(n => n[0]).join("")}

@@ -69,15 +69,15 @@ export default function AcquereurDataRoom() {
   if (mockGrantedDataRooms.length === 0) {
     return (
       <AppLayout>
-        <div className="p-6 md:p-8 max-w-4xl">
-          <div className="flex items-center gap-3 mb-8">
-            <FolderOpen className="text-primary" size={28} />
-            <div>
-              <h1 className="font-display text-2xl md:text-3xl font-bold">Mes Data Rooms</h1>
-              <p className="text-sm text-muted-foreground">Les vendeurs qui vous ont autorisé l'accès à leurs documents</p>
-            </div>
+      <div className="p-4 sm:p-6 md:p-8 max-w-4xl">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <FolderOpen className="text-primary shrink-0" size={24} />
+          <div>
+            <h1 className="font-display text-2xl md:text-3xl font-bold">Mes Data Rooms</h1>
+            <p className="text-sm text-muted-foreground">Les vendeurs qui vous ont autorisé l'accès à leurs documents</p>
           </div>
-          <EmptyState
+        </div>
+        <EmptyState
             icon={FolderOpen}
             title="Aucun accès Data Room"
             subtitle="Lorsqu'un vendeur vous accordera l'accès à sa Data Room, vous pourrez consulter ses documents ici."
@@ -89,12 +89,12 @@ export default function AcquereurDataRoom() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-4xl">
-        <div className="flex items-center gap-3 mb-8">
-          <FolderOpen className="text-primary" size={28} />
+      <div className="p-4 sm:p-6 md:p-8 max-w-4xl">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+          <FolderOpen className="text-primary shrink-0" size={24} />
           <div>
             <h1 className="font-display text-2xl md:text-3xl font-bold">Mes Data Rooms</h1>
-            <p className="text-sm text-muted-foreground">Les vendeurs qui vous ont autorisé l'accès à leurs documents</p>
+            <p className="text-sm text-muted-foreground">Les vendeurs qui vous ont autorisé l'accès</p>
           </div>
         </div>
 
@@ -112,15 +112,15 @@ export default function AcquereurDataRoom() {
 
               <div className="p-5">
                 {/* Header */}
-                <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4">
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <Building2 className="text-primary" size={22} />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <Building2 className="text-primary" size={20} />
                     </div>
-                    <div>
-                      <h3 className="font-semibold">{room.property}</h3>
-                      <p className="text-sm text-muted-foreground">{room.owner}</p>
-                      <div className="flex flex-wrap gap-2 mt-1.5 text-xs text-muted-foreground">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base">{room.property}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{room.owner}</p>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5 text-[11px] sm:text-xs text-muted-foreground">
                         <span className="flex items-center gap-1"><MapPin size={11} /> {room.location}</span>
                         <span className="flex items-center gap-1"><Ruler size={11} /> {room.surface}</span>
                         <span className="flex items-center gap-1"><Euro size={11} /> {room.price}</span>
@@ -130,8 +130,8 @@ export default function AcquereurDataRoom() {
                       </div>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2 shrink-0">
-                    <Badge variant="default" className="text-xs gap-1 bg-primary/20 text-primary border-primary/30">
+                  <div className="flex sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                    <Badge variant="default" className="text-[10px] sm:text-xs gap-1 bg-primary/20 text-primary border-primary/30">
                       <CheckCircle size={10} /> Accès accordé
                     </Badge>
                     <span className="text-[11px] text-muted-foreground">{room.grantedAt}</span>
@@ -139,7 +139,7 @@ export default function AcquereurDataRoom() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-2">
                   <button
                     onClick={() => setExpanded(expanded === room.id ? null : room.id)}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"

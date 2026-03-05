@@ -157,7 +157,7 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-6xl">
+      <div className="p-4 sm:p-6 md:p-8 max-w-6xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-3">
           <div>
             <h1 className="font-display text-2xl md:text-3xl font-bold">
@@ -170,8 +170,8 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
             </p>
           </div>
           {mode !== "catalog" && (
-            <Link to="/listings/create">
-              <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
+            <Link to="/listings/create" className="block">
+              <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">
                 <Plus size={16} className="mr-2" /> Nouvelle annonce
               </Button>
             </Link>
@@ -179,7 +179,7 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
         </div>
 
         {/* Type pills */}
-        <div className="flex flex-wrap gap-2 mt-4 mb-6">
+        <div className="flex flex-nowrap sm:flex-wrap gap-2 mt-4 mb-6 overflow-x-auto pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
           {typeList.map((t) => {
             const color = t === "Tous" ? undefined : typeColors[t];
             const isActive = typeFilter === t;
@@ -187,7 +187,7 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 shrink-0 whitespace-nowrap ${
                   isActive
                     ? "border-primary text-primary-foreground bg-primary"
                     : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
@@ -214,7 +214,7 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
             ctaHref="/listings/create"
           />
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((item, i) => (
               <motion.div
                 key={item.id}

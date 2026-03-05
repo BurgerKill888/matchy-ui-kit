@@ -10,8 +10,8 @@ import { Shield, Bell, User } from "lucide-react";
 export default function Profile() {
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-3xl">
-        <h1 className="font-display text-2xl md:text-3xl font-bold mb-8">Profil & Paramètres</h1>
+      <div className="p-4 sm:p-6 md:p-8 max-w-3xl">
+        <h1 className="font-display text-2xl md:text-3xl font-bold mb-6 sm:mb-8">Profil & Paramètres</h1>
 
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="bg-secondary border border-border">
@@ -34,7 +34,7 @@ export default function Profile() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Prénom</Label>
                   <Input defaultValue="Jean" className="mt-1.5 bg-secondary border-border" />

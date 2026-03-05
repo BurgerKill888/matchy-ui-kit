@@ -61,7 +61,7 @@ export default function HomePage() {
           <img src={heroBg} alt="" className="w-full h-full object-cover opacity-30" />
           <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
         </div>
-        <div className="relative container flex flex-col items-center text-center py-32 md:py-44">
+        <div className="relative container flex flex-col items-center text-center py-20 sm:py-32 md:py-44 px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -127,7 +127,7 @@ export default function HomePage() {
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Tarifs 2026</h2>
           <p className="text-muted-foreground text-lg">Choisissez le pack adapté à votre activité.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto px-4 md:px-0">
           {packs.map((pack, i) => (
             <motion.div
               key={pack.name}
@@ -169,7 +169,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t border-border py-12">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="container flex flex-col md:flex-row items-center justify-between gap-4 px-4 text-center md:text-left">
           <div className="flex items-center gap-2">
             <Building2 className="text-primary" size={20} />
             <span className="font-display font-bold">Matchstone</span>

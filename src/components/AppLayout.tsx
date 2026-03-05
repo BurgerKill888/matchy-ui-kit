@@ -32,7 +32,7 @@ const bottomNav: NavItem[] = [
 const VENDEUR_ONLY_PAGES = ["/listings", "/dataroom"];
 const ACQUEREUR_ONLY_PAGES = ["/criteria", "/catalog", "/discovery", "/acquereur-dataroom"];
 
-function SpaceSwitcher({ collapsed }: { collapsed: boolean }) {
+function SpaceSwitcher({ collapsed, mobile }: { collapsed: boolean; mobile?: boolean }) {
   const { space, setSpace } = useUserSpace();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +53,28 @@ function SpaceSwitcher({ collapsed }: { collapsed: boolean }) {
       navigate("/dashboard", { replace: true });
     }
   };
+
+  if (mobile) {
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button className="md:hidden flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-full px-2 py-1 hover:bg-secondary border border-border">
+            <div className="w-1.5 h-1.5 rounded-full bg-primary glow-gold shrink-0" />
+            <span>{space === "vendeur" ? "V" : "A"}</span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent side="bottom" className="w-auto p-2" align="end">
+          <button
+            onClick={handleSwitch}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition-colors w-full"
+          >
+            <div className="w-2 h-2 rounded-full bg-info" />
+            Passer en {targetLabel}
+          </button>
+        </PopoverContent>
+      </Popover>
+    );
+  }
 
   const indicator = (
     <div className={`flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-lg hover:bg-secondary ${collapsed ? 'justify-center p-1.5' : 'px-3 py-2'}`}>
@@ -86,25 +108,26 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
   const { space, isAcquereur } = useUserSpace();
 
   const navItems = isAcquereur ? acquereurNav : vendeurNav;
+  const allMobileNav = [...navItems, ...bottomNav];
 
   return (
     <div className="min-h-screen flex flex-col bg-background" data-space={space}>
       {/* Top Nav */}
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-4 md:px-6 h-16">
+        <div className="flex items-center justify-between px-4 md:px-6 h-14 md:h-16">
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden text-foreground">
               {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
             <Link to="/dashboard" className="flex items-center gap-2">
-              
-              <span className="font-display text-xl font-bold text-foreground hidden sm:inline">
+              <span className="font-display text-lg md:text-xl font-bold text-foreground">
                 Match<span className="text-primary">stone</span>
               </span>
             </Link>
           </div>
 
           <div className="flex items-center gap-1">
+            <SpaceSwitcher collapsed={false} mobile />
             <NotificationPanel />
             <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
@@ -114,12 +137,11 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-16 left-0 z-40 ${collapsed ? 'w-14' : 'w-60'} h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-200 flex flex-col`}>
-          {/* Spacer for top */}
+        {/* Desktop Sidebar */}
+        <aside className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:sticky top-14 md:top-16 left-0 z-40 ${sidebarOpen ? 'w-64' : ''} ${!sidebarOpen ? '' : ''} ${collapsed ? 'md:w-14' : 'md:w-60'} h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)] bg-card border-r border-border transition-all duration-200 flex flex-col`}>
           <div className="pt-3" />
 
-          <nav className={`flex flex-col gap-1 ${collapsed ? 'p-2' : 'px-4 pb-4'} flex-1`}>
+          <nav className={`flex flex-col gap-1 ${collapsed ? 'md:p-2' : 'md:px-4 md:pb-4'} px-4 pb-4 flex-1`}>
             {navItems.map((item) => {
               const active = location.pathname === item.href ||
               item.href !== "/dashboard" && location.pathname.startsWith(item.href);
@@ -129,16 +151,16 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
                   key={item.href}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
+                  className={`flex items-center ${collapsed ? 'md:justify-center' : 'gap-3'} ${collapsed ? 'md:px-0 px-3 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
                   active ?
                   "bg-primary/10 text-primary" :
                   "text-muted-foreground hover:text-foreground hover:bg-secondary"}`
                   }>
 
                   <item.icon size={18} />
-                  {!collapsed && <span>{item.label}</span>}
-                  {!collapsed && item.vip && (
-                    <span className="ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-primary">
+                  <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>
+                  {item.vip && (
+                    <span className={`ml-auto flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary/15 border border-primary/30 text-primary ${collapsed ? 'md:hidden' : ''}`}>
                       <Crown size={11} />
                     </span>
                   )}
@@ -149,7 +171,7 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
                 return (
                   <Tooltip key={item.href}>
                     <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                    <TooltipContent side="right" className="text-xs">{item.label}</TooltipContent>
+                    <TooltipContent side="right" className="text-xs hidden md:block">{item.label}</TooltipContent>
                   </Tooltip>
                 );
               }
@@ -157,7 +179,7 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
             })}
           </nav>
 
-          {/* Collapse button above bottom section */}
+          {/* Collapse button */}
           <div className={`${collapsed ? 'px-2' : 'px-4'} pb-2`}>
             <button
               onClick={() => setCollapsed(!collapsed)}
@@ -177,17 +199,17 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
                   key={item.href}
                   to={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'} ${collapsed ? 'px-0 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
+                  className={`flex items-center ${collapsed ? 'md:justify-center' : 'gap-3'} ${collapsed ? 'md:px-0 px-3 py-2.5' : 'px-3 py-2.5'} rounded-lg text-sm font-medium transition-all duration-200 hover:scale-[1.02] ${
                   active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary"}`}>
                   <item.icon size={18} />
-                  {!collapsed && <span>{item.label}</span>}
+                  <span className={collapsed ? 'md:hidden' : ''}>{item.label}</span>
                 </Link>
               );
               if (collapsed) {
                 return (
                   <Tooltip key={item.href}>
                     <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                    <TooltipContent side="right" className="text-xs">{item.label}</TooltipContent>
+                    <TooltipContent side="right" className="text-xs hidden md:block">{item.label}</TooltipContent>
                   </Tooltip>
                 );
               }
@@ -203,7 +225,7 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
         }
 
         {/* Main */}
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 pb-16 md:pb-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -216,6 +238,28 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Mobile Bottom Tab Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-xl border-t border-border">
+        <div className="flex items-center justify-around h-14 px-1">
+          {allMobileNav.map((item) => {
+            const active = location.pathname === item.href ||
+              (item.href !== "/dashboard" && location.pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-lg transition-colors ${
+                  active ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <item.icon size={20} className={active ? "text-primary" : ""} />
+                <span className="text-[10px] font-medium leading-tight">{item.label.replace("Mon ", "").replace("Mes ", "")}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>);
 
 }

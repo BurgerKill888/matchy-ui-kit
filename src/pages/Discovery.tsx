@@ -69,7 +69,7 @@ function SwipeCard({ card, isTop, onSwipe, onScoreClick }: {
         <div className="h-1 flex-shrink-0" style={{ backgroundColor: getTypeColor(card.type) }} />
 
         {/* Image area */}
-        <div className="relative h-44 flex-shrink-0 bg-gradient-to-br from-muted/30 via-muted/10 to-muted/30 flex items-center justify-center">
+        <div className="relative h-32 sm:h-44 flex-shrink-0 bg-gradient-to-br from-muted/30 via-muted/10 to-muted/30 flex items-center justify-center">
           <Building2 className="text-muted-foreground/20" size={72} />
           <div className="absolute top-3 left-3">
             <Badge className="text-xs font-semibold" style={{ backgroundColor: getTypeColor(card.type) + "33", borderColor: getTypeColor(card.type) + "66", color: "hsl(var(--foreground))" }}>
@@ -306,9 +306,9 @@ export default function Discovery() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col items-center justify-center p-4 md:p-8 min-h-[calc(100vh-4rem)]">
+      <div className="flex flex-col items-center justify-center p-4 md:p-8 min-h-[calc(100vh-7rem)] md:min-h-[calc(100vh-4rem)]">
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-4 md:mb-6">
           <h1 className="font-display text-2xl md:text-3xl font-bold">Découvrir</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {cards.length > 0
@@ -318,7 +318,7 @@ export default function Discovery() {
         </div>
 
         {/* Filter button */}
-        <div className="mb-6 flex items-center gap-3">
+        <div className="mb-4 md:mb-6 flex items-center gap-3 flex-wrap justify-center">
           <Button
             variant="outline"
             className="border-border/50 gap-2 hover:bg-muted/30"
@@ -342,7 +342,7 @@ export default function Discovery() {
         </div>
 
         {/* Card stack */}
-        <div className="relative w-full max-w-sm h-[480px] mx-auto mb-8">
+        <div className="relative w-full max-w-sm h-[400px] sm:h-[480px] mx-auto mb-6 sm:mb-8">
           {cards.length === 0 ? (
             <EmptyState
               icon={CheckCircle}

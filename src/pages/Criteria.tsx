@@ -109,14 +109,14 @@ export default function CriteriaPage() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-5xl">
+      <div className="p-4 sm:p-6 md:p-8 max-w-5xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <div>
             <h1 className="font-display text-2xl md:text-3xl font-bold">Mes fiches de critères</h1>
             <p className="text-muted-foreground text-sm mt-1">Vos critères de recherche actifs sur le réseau</p>
           </div>
-          <Link to="/criteria/create">
-            <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02]">
+          <Link to="/criteria/create" className="block w-full sm:w-auto">
+            <Button className="glow-gold transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">
               <Plus size={16} className="mr-2" /> Nouvelle fiche
             </Button>
           </Link>
@@ -166,7 +166,7 @@ export default function CriteriaPage() {
                 transition={{ delay: i * 0.06 }}
               >
                 <div className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200 group">
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs shrink-0">
@@ -180,7 +180,7 @@ export default function CriteriaPage() {
                       </div>
                       <h3 className="font-semibold text-sm group-hover:text-primary transition-colors leading-snug">{item.title}</h3>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       <Link to={`/criteria/create`}>
                         <Button size="sm" variant="outline" className="text-xs h-7 transition-transform duration-200 hover:scale-[1.02]">
                           <Edit size={12} className="mr-1" /> Modifier

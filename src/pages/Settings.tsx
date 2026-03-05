@@ -61,7 +61,7 @@ export default function Settings() {
 
   return (
     <AppLayout>
-      <div className="p-6 md:p-8 max-w-3xl space-y-8">
+      <div className="p-4 sm:p-6 md:p-8 max-w-3xl space-y-6 sm:space-y-8">
         <div>
           <h1 className="font-display text-2xl md:text-3xl font-bold">Paramètres</h1>
           <p className="text-muted-foreground mt-1">Votre profil, vos documents et votre abonnement</p>
@@ -83,7 +83,7 @@ export default function Settings() {
               <Badge className="text-xs mt-1 gap-1"><Shield size={10} /> Investisseur qualifié</Badge>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Représentant</Label>
               <Input defaultValue="Jean Dupont" className="mt-1.5 bg-secondary border-border" />
@@ -93,7 +93,7 @@ export default function Settings() {
               <Input defaultValue="SCI Patrimoine" className="mt-1.5 bg-secondary border-border" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Email</Label>
               <Input defaultValue="contact@sci-patrimoine.fr" className="mt-1.5 bg-secondary border-border" />
@@ -165,9 +165,9 @@ export default function Settings() {
             </div>
             <Progress value={70} className="h-2" />
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" className="text-sm transition-transform duration-200 hover:scale-[1.02]">Changer de pack</Button>
-            <Button variant="outline" className="text-sm transition-transform duration-200 hover:scale-[1.02]">+ Opportunités (+20€ HT/mois)</Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" className="text-sm transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">Changer de pack</Button>
+            <Button variant="outline" className="text-sm transition-transform duration-200 hover:scale-[1.02] w-full sm:w-auto">+ Opportunités (+20€ HT/mois)</Button>
           </div>
         </motion.div>
 
