@@ -220,15 +220,18 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
     setter(p => [...p, { name: `document_${p.length + 1}.pdf`, size: "1.1 MB", icon: "📄" }]);
 
   // Dynamic labels
+  // Criteria name (acquéreur only)
+  const [criteriaName, setCriteriaName] = useState("");
+
   const getQLabels = (): string[] => {
     if (isVendeur) {
       if (opType === "actif") return ["Typologie", "Surfaces", "Urbanisme", "État", "Prix", "Localisation", "Photos", "Data Room"];
       if (opType === "parts") return ["Structure", "Actifs", "Stade", "Finances", "Horizon", "Localisation", "Documents"];
       return ["Support", "Stratégie", "Conditions", "Documents"];
     } else {
-      if (opType === "actif") return ["Typologie", "Surfaces", "Structure", "Urbanisme", "État", "Budget", "Zone géo"];
-      if (opType === "parts") return ["Structure", "Actifs", "Stade", "Finances", "Horizon", "Zone géo"];
-      return ["Support", "Objectif", "Montant", "Horizon", "Risque"];
+      if (opType === "actif") return ["Nom", "Typologie", "Surfaces", "Structure", "Urbanisme", "État", "Budget", "Zone géo"];
+      if (opType === "parts") return ["Nom", "Structure", "Actifs", "Stade", "Finances", "Horizon", "Zone géo"];
+      return ["Nom", "Support", "Objectif", "Montant", "Horizon", "Risque"];
     }
   };
   const qLabels = getQLabels();
