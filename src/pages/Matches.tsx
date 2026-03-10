@@ -261,6 +261,7 @@ export default function Matches() {
           <MatchListColumn
             filter={filter} setFilter={setFilter} counts={counts}
             typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+            criteriaFilter={criteriaFilter} setCriteriaFilter={setCriteriaFilter}
             sortOrder={sortOrder} setSortOrder={setSortOrder}
             active={active} expired={expired} selectedId={selectedId}
             onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
