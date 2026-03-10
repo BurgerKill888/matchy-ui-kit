@@ -113,6 +113,7 @@ export default function Matches() {
 
   const [filter, setFilter] = useState<Status | "all">("all");
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [criteriaFilter, setCriteriaFilter] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"none" | "asc" | "desc">("none");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -153,7 +154,8 @@ export default function Matches() {
 
   const filteredByStatus = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
   const filteredByType = typeFilter.length === 0 ? filteredByStatus : filteredByStatus.filter((m) => typeFilter.includes(m.type));
-  const filtered = sortOrder === "none" ? filteredByType : [...filteredByType].sort((a, b) => {
+  const filteredByCriteria = criteriaFilter.length === 0 ? filteredByType : filteredByType.filter((m) => m.criteriaName && criteriaFilter.includes(m.criteriaName));
+  const filtered = sortOrder === "none" ? filteredByCriteria : [...filteredByCriteria].sort((a, b) => {
     const priceA = parseInt(a.price.replace(/\s/g, "").replace("€", ""));
     const priceB = parseInt(b.price.replace(/\s/g, "").replace("€", ""));
     return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
