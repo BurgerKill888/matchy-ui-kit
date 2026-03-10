@@ -9,7 +9,7 @@ import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean;};
 
