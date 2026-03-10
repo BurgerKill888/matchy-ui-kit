@@ -480,13 +480,20 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                 {/* ===== ACQUÉREUR ACTIF ===== */}
                 {!isVendeur && opType === "actif" && (<>
                   {qStep === 0 && <div className="glass-card rounded-xl p-6 shadow-card">
+                    <h2 className="font-display text-xl font-bold mb-1">Nommez votre fiche</h2>
+                    <p className="text-sm text-muted-foreground mb-5">Donnez un nom à cette fiche pour la retrouver facilement.</p>
+                    <InputField label="Nom de la fiche" placeholder="ex : Bureaux IDF — 200 à 500m²" value={criteriaName} onChange={setCriteriaName} error={showErr && !criteriaName.trim() ? "Obligatoire" : null} />
+                    <InfoBox icon="🏷️">Ce nom apparaîtra sur votre fiche et dans vos filtres de matches.</InfoBox>
+                    <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!criteriaName.trim(), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
+                  </div>}
+                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">A/ Typologie recherchée</h2>
                     <p className="text-sm text-muted-foreground mb-5">Quel(s) type(s) de bien ?</p>
                     {TYPOS_ACTIF.map(t => <CheckItem key={t} label={t} checked={aTypo.includes(t)} onClick={() => toggleArr(aTypo, setATypo, t)} />)}
                     {showErr && !aTypo.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(aTypo.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">B/ Surfaces recherchées</h2>
                     <p className="text-sm text-muted-foreground mb-4">Définissez vos fourchettes.</p>
                     <InfoBox icon="📐">Les fourchettes permettent un matching précis avec les biens disponibles.</InfoBox>
@@ -500,7 +507,7 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                     </div>
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aSurfBMin && aSurfBMax && aSurfTMin && aSurfTMax) && +aSurfBMax >= +aSurfBMin && +aSurfTMax >= +aSurfTMin, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">C/ Structure acceptée</h2>
                     <div className="grid grid-cols-2 gap-4">
                       <InputField label="Lots minimum" type="number" placeholder="1" value={aLotsMin} onChange={setALotsMin} error={showErr && !aLotsMin ? "Obligatoire" : null} />
@@ -508,20 +515,20 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                     </div>
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aLotsMin, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">D/ Contraintes d'urbanisme</h2>
                     <RadioGroup label="Constructible obligatoire ?" options={["Oui", "Non", "Peu importe"]} value={aConst} onChange={setAConst} error={showErr && !aConst ? "Obligatoire" : null} />
                     <RadioGroup label="Division" options={["Obligatoire", "Souhaitée", "Peu importe"]} value={aDiv} onChange={setADiv} error={showErr && !aDiv ? "Obligatoire" : null} />
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aConst && aDiv), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">E/ État du bien accepté</h2>
                     <p className="text-sm text-muted-foreground mb-5">Plusieurs choix possibles.</p>
                     {["Bon état", "À rafraîchir", "À rénover", "À restructurer", "À démolir"].map(e => <CheckItem key={e} label={e} checked={aEtats.includes(e)} onClick={() => toggleArr(aEtats, setAEtats, e)} />)}
                     {showErr && !aEtats.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(aEtats.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 6 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">F/ Budget</h2>
                     <p className="text-sm text-muted-foreground mb-5">Fourchette obligatoire.</p>
                     <div className="grid grid-cols-2 gap-4">
@@ -530,7 +537,7 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                     </div>
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aBudgMin && aBudgMax) && +aBudgMax >= +aBudgMin, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 6 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 7 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">G/ Zone géographique</h2>
                     <InputField label="Point central (adresse ou GPS)" placeholder="Paris 8e" value={aAdr} onChange={setAAdr} error={showErr && !aAdr ? "Obligatoire" : null} />
                     <RadioGroup label="Rayon de recherche" options={["1 km", "5 km", "10 km", "20 km", "Personnalisé"]} value={aRayon} onChange={setARayon} error={showErr && !aRayon ? "Obligatoire" : null} />
