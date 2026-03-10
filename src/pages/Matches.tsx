@@ -41,6 +41,7 @@ interface MatchItem {
   condition: string;
   dataRoomAccess: boolean;
   image: string;
+  criteriaName?: string;
 }
 
 interface ChatMessage {
