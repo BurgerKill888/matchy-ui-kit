@@ -600,18 +600,25 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                 {/* ===== ACQUÉREUR INVEST ===== */}
                 {!isVendeur && opType === "invest" && (<>
                   {qStep === 0 && <div className="glass-card rounded-xl p-6 shadow-card">
+                    <h2 className="font-display text-xl font-bold mb-1">Nommez votre fiche</h2>
+                    <p className="text-sm text-muted-foreground mb-5">Donnez un nom à cette fiche pour la retrouver facilement.</p>
+                    <InputField label="Nom de la fiche" placeholder="ex : SCPI Rendement — Modéré" value={criteriaName} onChange={setCriteriaName} error={showErr && !criteriaName.trim() ? "Obligatoire" : null} />
+                    <InfoBox icon="🏷️">Ce nom apparaîtra sur votre fiche et dans vos filtres de matches.</InfoBox>
+                    <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!criteriaName.trim(), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
+                  </div>}
+                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">A/ Type de support recherché</h2>
                     {SUPPORTS.map(s => <CheckItem key={s} label={s} checked={aiSupport.includes(s)} onClick={() => toggleArr(aiSupport, setAiSupport, s)} />)}
                     {showErr && !aiSupport.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(aiSupport.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">B/ Objectif d'investissement</h2>
                     {["Rendement", "Sécurisation patrimoniale", "Diversification"].map(o => <CheckItem key={o} label={o} checked={aiObj === o} onClick={() => setAiObj(o)} multi={false} />)}
                     {showErr && !aiObj && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aiObj, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">C/ Montant d'investissement</h2>
                     <p className="text-sm text-muted-foreground mb-4">Fourchette.</p>
                     <div className="grid grid-cols-2 gap-4">
@@ -620,12 +627,12 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                     </div>
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(aiBudgMin && aiBudgMax), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">D/ Horizon d'investissement</h2>
                     <RadioGroup label="Horizon" options={["Court terme", "Moyen terme", "Long terme"]} value={aiHorizon} onChange={setAiHorizon} error={showErr && !aiHorizon ? "Obligatoire" : null} />
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aiHorizon, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">E/ Profil de risque</h2>
                     <RadioGroup label="Risque accepté" options={["Faible", "Modéré", "Dynamique"]} value={aiRisque} onChange={setAiRisque} error={showErr && !aiRisque ? "Obligatoire" : null} />
                     <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!aiRisque, goQNext)}>Valider ma recherche <Check className="ml-2" size={16} /></Button></div>
