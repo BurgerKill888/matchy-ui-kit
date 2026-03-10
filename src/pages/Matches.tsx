@@ -93,6 +93,7 @@ const pipelineSteps: { key: Status; label: string }[] = [
 ];
 
 const allPropertyTypes = ["Maison", "Immeuble", "Appartement", "Terrain à potentiel", "Local commercial", "Bureaux", "Entrepôt / activité", "Ensemble immobilier mixte"];
+const allCriteriaNames = [...new Set(mockMatches.map(m => m.criteriaName).filter(Boolean))] as string[];
 
 // --- Helpers ---
 function getTimerStyle(hours: number) {
