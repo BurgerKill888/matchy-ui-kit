@@ -527,6 +527,32 @@ function MatchListColumn({
         </Button>
       </div>
 
+      {/* Active filter pills */}
+      {activeFilterCount > 0 && (
+        <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+          {typeFilter.map((t) => (
+            <button
+              key={`type-${t}`}
+              onClick={() => toggleType(t)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              {t}
+              <X size={10} />
+            </button>
+          ))}
+          {criteriaFilter.map((c) => (
+            <button
+              key={`criteria-${c}`}
+              onClick={() => toggleCriteria(c)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent text-accent-foreground border border-border hover:bg-accent/80 transition-colors"
+            >
+              {c}
+              <X size={10} />
+            </button>
+          ))}
+        </div>
+      )}
+
       <ScrollArea className="flex-1">
         {filtered.length === 0 ? (
           <div className="p-4">
