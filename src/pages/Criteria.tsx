@@ -21,6 +21,7 @@ const dpeColors: Record<string, string> = {
 const mockCriteria = [
   {
     id: 1,
+    name: "Bureaux IDF",
     title: "Bureaux IDF — 200 à 500m²",
     type: "Bureaux",
     surface: "200 – 500m²",
@@ -33,6 +34,7 @@ const mockCriteria = [
   },
   {
     id: 2,
+    name: "Entrepôts Lyon",
     title: "Entrepôts Lyon — > 2 000m²",
     type: "Entrepôt / activité",
     surface: "> 2 000m²",
@@ -45,6 +47,7 @@ const mockCriteria = [
   },
   {
     id: 3,
+    name: "Terrains Bordeaux",
     title: "Terrains constructibles Bordeaux",
     type: "Terrain à potentiel",
     surface: "1 000 – 5 000m²",
@@ -57,6 +60,7 @@ const mockCriteria = [
   },
   {
     id: 4,
+    name: "Commerce Paris Centre",
     title: "Local commercial Centre-ville",
     type: "Local commercial",
     surface: "50 – 200m²",
@@ -165,9 +169,13 @@ export default function CriteriaPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.06 }}
               >
-                <div className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200 group">
+                <div className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200 group relative">
+                  {/* Name badge top-right */}
+                  <span className="absolute top-3 right-3 bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                    {item.name}
+                  </span>
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-2">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 pr-20">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs shrink-0">
                           {item.status === "active" ? "Active" : "Brouillon"}

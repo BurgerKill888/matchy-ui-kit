@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, FileText,
-  Settings, LogOut, Menu, X, Heart, Compass, Crown, LayoutGrid, PanelLeftClose, PanelLeftOpen } from
+  Settings, LogOut, Menu, X, Heart, Compass, Crown, LayoutGrid, PanelLeftClose, PanelLeftOpen, ArrowUpDown, ArrowUp, ArrowDown } from
 "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { useUserSpace } from "@/contexts/UserSpaceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import NotificationPanel from "@/components/NotificationPanel";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 type NavItem = {label: string;icon: React.ElementType;href: string;vip?: boolean;};
 
@@ -36,10 +36,8 @@ function SpaceSwitcher({ collapsed, mobile }: { collapsed: boolean; mobile?: boo
   const { space, setSpace } = useUserSpace();
   const navigate = useNavigate();
   const location = useLocation();
-  const [open, setOpen] = useState(false);
 
   const targetSpace = space === "vendeur" ? "acquereur" : "vendeur";
-  const targetLabel = targetSpace === "vendeur" ? "Espace Vendeur" : "Espace Acquéreur";
 
   const handleSwitch = () => {
     const isOnOldSpacePage =
@@ -47,57 +45,34 @@ function SpaceSwitcher({ collapsed, mobile }: { collapsed: boolean; mobile?: boo
       (space === "acquereur" && ACQUEREUR_ONLY_PAGES.some(p => location.pathname.startsWith(p)));
 
     setSpace(targetSpace);
-    setOpen(false);
 
     if (isOnOldSpacePage) {
       navigate("/dashboard", { replace: true });
     }
   };
 
+  const currentLabel = space === "vendeur" ? "Vendeur" : "Acquéreur";
+
   if (mobile) {
     return (
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button className="md:hidden flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-full px-2 py-1 hover:bg-secondary border border-border">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary glow-gold shrink-0" />
-            <span>{space === "vendeur" ? "V" : "A"}</span>
-          </button>
-        </PopoverTrigger>
-        <PopoverContent side="bottom" className="w-auto p-2" align="end">
-          <button
-            onClick={handleSwitch}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition-colors w-full"
-          >
-            <div className="w-2 h-2 rounded-full bg-info" />
-            Passer en {targetLabel}
-          </button>
-        </PopoverContent>
-      </Popover>
+      <button
+        onClick={handleSwitch}
+        className="md:hidden flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-full px-2 py-1 hover:bg-secondary border border-border"
+      >
+        <ArrowUpDown size={10} className="shrink-0" />
+        <span>{space === "vendeur" ? "V" : "A"}</span>
+      </button>
     );
   }
 
-  const indicator = (
-    <div className={`flex items-center gap-2 text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-lg hover:bg-secondary ${collapsed ? 'justify-center p-1.5' : 'px-3 py-2'}`}>
-      <div className="w-2 h-2 rounded-full bg-primary glow-gold shrink-0" />
-      {!collapsed && <span>{space === "vendeur" ? "Mode Vendeur" : "Mode Acquéreur"}</span>}
-    </div>
-  );
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        {indicator}
-      </PopoverTrigger>
-      <PopoverContent side={collapsed ? "right" : "top"} className="w-auto p-2" align="start">
-        <button
-          onClick={handleSwitch}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium hover:bg-secondary transition-colors w-full"
-        >
-          <div className="w-2 h-2 rounded-full bg-info" />
-          Passer en {targetLabel}
-        </button>
-      </PopoverContent>
-    </Popover>
+    <button
+      onClick={handleSwitch}
+      className={`flex items-center ${collapsed ? 'justify-center' : 'gap-2'} text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-lg hover:bg-secondary w-full ${collapsed ? 'p-1.5' : 'px-3 py-2'}`}
+    >
+      <ArrowUpDown size={14} className="shrink-0" />
+      {!collapsed && <span>{currentLabel}</span>}
+    </button>
   );
 }
 export default function AppLayout({ children }: {children: React.ReactNode;}) {

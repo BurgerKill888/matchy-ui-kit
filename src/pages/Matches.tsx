@@ -41,6 +41,7 @@ interface MatchItem {
   condition: string;
   dataRoomAccess: boolean;
   image: string;
+  criteriaName?: string;
 }
 
 interface ChatMessage {
@@ -52,10 +53,10 @@ interface ChatMessage {
 
 // --- Mock data ---
 const mockMatches: MatchItem[] = [
-  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", pricePerM2: "8 000 €/m²", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop" },
-  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", pricePerM2: "2 917 €/m²", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true, image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop" },
-  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", pricePerM2: "3 444 €/m²", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop" },
-  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", pricePerM2: "60 €/m²", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop" },
+  { id: 1, property: "Bureau 350m² Paris 8e", type: "Bureaux", counterpart: "SCI Patrimoine", timer: "2j 14h", timerHours: 62, compatibility: 92, status: "new", unread: true, lastMessage: "", price: "2 800 000 €", pricePerM2: "8 000 €/m²", priceTag: "Prix ferme", location: "Paris 8e", surface: "350m²", condition: "Bon état", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop", criteriaName: "Bureaux IDF" },
+  { id: 2, property: "Immeuble mixte Lyon 6e", type: "Immeuble", counterpart: "Foncière Grand Ouest", timer: "5j 02h", timerHours: 122, compatibility: 85, status: "in_conversation", unread: false, lastMessage: "Documents reçus, merci.", price: "3 500 000 €", pricePerM2: "2 917 €/m²", priceTag: "Négociable", location: "Lyon 6e", surface: "1 200m²", condition: "À rénover", dataRoomAccess: true, image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&h=300&fit=crop", criteriaName: "Bureaux IDF" },
+  { id: 3, property: "Local commercial Marseille", type: "Local commercial", counterpart: "Cabinet Martin & Associés", timer: "1j 08h", timerHours: 32, compatibility: 88, status: "offer_sent", unread: true, lastMessage: "Offre envoyée.", price: "620 000 €", pricePerM2: "3 444 €/m²", priceTag: "Off-market 🔒", location: "Marseille 2e", surface: "180m²", condition: "Neuf", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop", criteriaName: "Commerce Paris Centre" },
+  { id: 4, property: "Terrain 2ha Bordeaux", type: "Terrain à potentiel", counterpart: "Nexity Régions", timer: "0j 00h", timerHours: 0, compatibility: 78, status: "expired", unread: false, lastMessage: "Délai expiré.", price: "1 200 000 €", pricePerM2: "60 €/m²", priceTag: "Négociable", location: "Bordeaux", surface: "2 ha", condition: "Terrain nu", dataRoomAccess: false, image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop", criteriaName: "Terrains Bordeaux" },
 ];
 
 const mockMessagesByMatch: Record<number, ChatMessage[]> = {
@@ -92,6 +93,7 @@ const pipelineSteps: { key: Status; label: string }[] = [
 ];
 
 const allPropertyTypes = ["Maison", "Immeuble", "Appartement", "Terrain à potentiel", "Local commercial", "Bureaux", "Entrepôt / activité", "Ensemble immobilier mixte"];
+const allCriteriaNames = [...new Set(mockMatches.map(m => m.criteriaName).filter(Boolean))] as string[];
 
 // --- Helpers ---
 function getTimerStyle(hours: number) {
@@ -111,6 +113,7 @@ export default function Matches() {
 
   const [filter, setFilter] = useState<Status | "all">("all");
   const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [criteriaFilter, setCriteriaFilter] = useState<string[]>([]);
   const [sortOrder, setSortOrder] = useState<"none" | "asc" | "desc">("none");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [message, setMessage] = useState("");
@@ -151,7 +154,8 @@ export default function Matches() {
 
   const filteredByStatus = filter === "all" ? mockMatches : mockMatches.filter((m) => m.status === filter);
   const filteredByType = typeFilter.length === 0 ? filteredByStatus : filteredByStatus.filter((m) => typeFilter.includes(m.type));
-  const filtered = sortOrder === "none" ? filteredByType : [...filteredByType].sort((a, b) => {
+  const filteredByCriteria = criteriaFilter.length === 0 ? filteredByType : filteredByType.filter((m) => m.criteriaName && criteriaFilter.includes(m.criteriaName));
+  const filtered = sortOrder === "none" ? filteredByCriteria : [...filteredByCriteria].sort((a, b) => {
     const priceA = parseInt(a.price.replace(/\s/g, "").replace("€", ""));
     const priceB = parseInt(b.price.replace(/\s/g, "").replace("€", ""));
     return sortOrder === "asc" ? priceA - priceB : priceB - priceA;
@@ -207,6 +211,7 @@ export default function Matches() {
               <MatchListColumn
                 filter={filter} setFilter={setFilter} counts={counts}
                 typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+                criteriaFilter={criteriaFilter} setCriteriaFilter={setCriteriaFilter}
                 sortOrder={sortOrder} setSortOrder={setSortOrder}
                 active={active} expired={expired} selectedId={selectedId}
                 onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
@@ -256,6 +261,7 @@ export default function Matches() {
           <MatchListColumn
             filter={filter} setFilter={setFilter} counts={counts}
             typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+            criteriaFilter={criteriaFilter} setCriteriaFilter={setCriteriaFilter}
             sortOrder={sortOrder} setSortOrder={setSortOrder}
             active={active} expired={expired} selectedId={selectedId}
             onSelect={selectMatch} filtered={filtered} isAcquereur={isAcquereur}
@@ -346,21 +352,26 @@ function useIsNarrow() {
 // LEFT COLUMN — Match list
 // =====================
 function MatchListColumn({
-  filter, setFilter, counts, typeFilter, setTypeFilter, sortOrder, setSortOrder, active, expired, selectedId, onSelect, filtered, isAcquereur,
+  filter, setFilter, counts, typeFilter, setTypeFilter, criteriaFilter, setCriteriaFilter, sortOrder, setSortOrder, active, expired, selectedId, onSelect, filtered, isAcquereur,
 }: {
   filter: Status | "all"; setFilter: (f: Status | "all") => void;
   counts: Record<Status, number>;
   typeFilter: string[]; setTypeFilter: (f: string[]) => void;
+  criteriaFilter: string[]; setCriteriaFilter: (f: string[]) => void;
   sortOrder: "none" | "asc" | "desc"; setSortOrder: (s: "none" | "asc" | "desc") => void;
   active: MatchItem[]; expired: MatchItem[];
   selectedId: number | null; onSelect: (id: number) => void;
   filtered: MatchItem[]; isAcquereur: boolean;
 }) {
-  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   function toggleType(t: string) {
     setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
+
+  function toggleCriteria(c: string) {
+    setCriteriaFilter(criteriaFilter.includes(c) ? criteriaFilter.filter((x) => x !== c) : [...criteriaFilter, c]);
   }
 
   function cycleSortOrder() {
@@ -368,6 +379,7 @@ function MatchListColumn({
   }
 
   const statusLabel = filter === "all" ? `Tous (${mockMatches.length})` : `${statusConfig[filter].label} (${counts[filter]})`;
+  const activeFilterCount = typeFilter.length + criteriaFilter.length;
 
   return (
     <>
@@ -376,14 +388,14 @@ function MatchListColumn({
       </div>
 
       {/* Filter buttons row */}
-      <div className="px-4 pb-3 flex items-center gap-2">
+      <div className="px-4 pb-1 flex items-center gap-2">
         {/* Status filter dropdown */}
         <div className="relative">
           <Button
             variant="outline"
             size="sm"
             className={`text-xs h-7 gap-1 ${filter !== "all" ? "border-primary text-primary" : ""}`}
-            onClick={() => { setStatusDropdownOpen(!statusDropdownOpen); setTypeDropdownOpen(false); }}
+            onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
           >
             <Heart size={12} />
             {statusLabel}
@@ -427,29 +439,28 @@ function MatchListColumn({
           </AnimatePresence>
         </div>
 
-        {/* Type filter dropdown */}
-        <div className="relative">
-          <Button
-            variant="outline"
-            size="sm"
-            className={`text-xs h-7 gap-1 ${typeFilter.length > 0 ? "border-primary text-primary" : ""}`}
-            onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setStatusDropdownOpen(false); }}
-          >
-            <Filter size={12} />
-            {typeFilter.length > 0 ? `${typeFilter.length} type${typeFilter.length > 1 ? "s" : ""}` : "Typologie"}
-            <ChevronDown size={11} className={`transition-transform ${typeDropdownOpen ? "rotate-180" : ""}`} />
-          </Button>
-          <AnimatePresence>
-            {typeDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)} />
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute left-0 top-full mt-1 z-50 w-56 rounded-lg border border-border bg-card shadow-elevated p-1.5"
-                >
+        {/* Filter modal trigger */}
+        <Button
+          variant="outline"
+          size="sm"
+          className={`text-xs h-7 gap-1 ${activeFilterCount > 0 ? "border-primary text-primary" : ""}`}
+          onClick={() => setFilterModalOpen(true)}
+        >
+          <Filter size={12} />
+          {activeFilterCount > 0 ? `${activeFilterCount} filtre${activeFilterCount > 1 ? "s" : ""}` : "Filtres"}
+        </Button>
+
+        {/* Filter Modal */}
+        <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogTitle className="font-display text-lg">Filtres</DialogTitle>
+            <DialogDescription className="sr-only">Filtrer les matches par type de bien et fiche critères</DialogDescription>
+
+            <div className="space-y-5">
+              {/* Type de bien */}
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Type de bien</p>
+                <div className="flex flex-wrap gap-1.5">
                   {allPropertyTypes.map((t) => {
                     const isActive = typeFilter.includes(t);
                     const color = getTypeColor(t);
@@ -457,32 +468,52 @@ function MatchListColumn({
                       <button
                         key={t}
                         onClick={() => toggleType(t)}
-                        className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
-                          isActive ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                          isActive ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
                         }`}
                       >
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                        <span className="flex-1 text-left">{t}</span>
-                        {isActive && <Check size={12} className="text-primary shrink-0" />}
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        {t}
                       </button>
                     );
                   })}
-                  {typeFilter.length > 0 && (
-                    <>
-                      <Separator className="my-1" />
-                      <button
-                        onClick={() => setTypeFilter([])}
-                        className="w-full text-center text-[11px] text-muted-foreground hover:text-foreground py-1"
-                      >
-                        Réinitialiser
-                      </button>
-                    </>
-                  )}
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
-        </div>
+                </div>
+              </div>
+
+              {/* Fiche critères (acquéreur only) */}
+              {isAcquereur && allCriteriaNames.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Fiche critères</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {allCriteriaNames.map((c) => {
+                      const isActive = criteriaFilter.includes(c);
+                      return (
+                        <button
+                          key={c}
+                          onClick={() => toggleCriteria(c)}
+                          className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                            isActive ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="mt-4">
+              {activeFilterCount > 0 && (
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setTypeFilter([]); setCriteriaFilter([]); }}>
+                  Réinitialiser
+                </Button>
+              )}
+              <Button size="sm" onClick={() => setFilterModalOpen(false)}>Appliquer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Sort button */}
         <Button
@@ -495,6 +526,32 @@ function MatchListColumn({
           {sortOrder === "asc" ? <ArrowUp size={13} /> : sortOrder === "desc" ? <ArrowDown size={13} /> : <ArrowUpDown size={13} />}
         </Button>
       </div>
+
+      {/* Active filter pills */}
+      {activeFilterCount > 0 && (
+        <div className="px-4 pb-2 flex flex-wrap gap-1.5">
+          {typeFilter.map((t) => (
+            <button
+              key={`type-${t}`}
+              onClick={() => toggleType(t)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              {t}
+              <X size={10} />
+            </button>
+          ))}
+          {criteriaFilter.map((c) => (
+            <button
+              key={`criteria-${c}`}
+              onClick={() => toggleCriteria(c)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent text-accent-foreground border border-border hover:bg-accent/80 transition-colors"
+            >
+              {c}
+              <X size={10} />
+            </button>
+          ))}
+        </div>
+      )}
 
       <ScrollArea className="flex-1">
         {filtered.length === 0 ? (
