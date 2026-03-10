@@ -549,25 +549,32 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                 {/* ===== ACQUÉREUR PARTS ===== */}
                 {!isVendeur && opType === "parts" && (<>
                   {qStep === 0 && <div className="glass-card rounded-xl p-6 shadow-card">
+                    <h2 className="font-display text-xl font-bold mb-1">Nommez votre fiche</h2>
+                    <p className="text-sm text-muted-foreground mb-5">Donnez un nom à cette fiche pour la retrouver facilement.</p>
+                    <InputField label="Nom de la fiche" placeholder="ex : SCI Lyon — Résidentiel" value={criteriaName} onChange={setCriteriaName} error={showErr && !criteriaName.trim() ? "Obligatoire" : null} />
+                    <InfoBox icon="🏷️">Ce nom apparaîtra sur votre fiche et dans vos filtres de matches.</InfoBox>
+                    <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!criteriaName.trim(), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
+                  </div>}
+                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">A/ Type de structure recherchée</h2>
                     {STRUCTURES.map(s => <CheckItem key={s} label={s} checked={apStruct.includes(s)} onClick={() => toggleArr(apStruct, setApStruct, s)} />)}
                     {showErr && !apStruct.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(apStruct.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 1 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">B/ Nature des actifs recherchés</h2>
                     {NATURES.map(n => <CheckItem key={n} label={n} checked={apNature === n} onClick={() => setApNature(n)} multi={false} />)}
                     {showErr && !apNature && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!apNature, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 2 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">C/ Stade de projet accepté</h2>
                     <p className="text-sm text-muted-foreground mb-5">Plusieurs choix possibles.</p>
                     {STADES.map(s => <CheckItem key={s} label={s} checked={apStades.includes(s)} onClick={() => toggleArr(apStades, setApStades, s)} />)}
                     {showErr && !apStades.length && <p className="text-xs text-destructive mt-2">⚠ Obligatoire.</p>}
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(apStades.length > 0, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 3 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">D/ Critères financiers</h2>
                     <p className="text-sm text-muted-foreground mb-4">Fourchettes.</p>
                     <div className="grid grid-cols-2 gap-4">
@@ -578,12 +585,12 @@ export default function CreateForm({ mode = "listing" }: CreateFormProps) {
                     <InputField label="TRI cible" placeholder="8" value={apTRI} onChange={setApTRI} suffix="%" required={false} />
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!(apBudgMin && apBudgMax && apRendMin), goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 4 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">E/ Horizon d'investissement</h2>
                     <RadioGroup label="Horizon" options={["Court terme", "Moyen terme", "Long terme"]} value={apHorizon} onChange={setApHorizon} error={showErr && !apHorizon ? "Obligatoire" : null} />
                     <div className="flex gap-3 mt-6"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!apHorizon, goQNext)}>Continuer <ArrowRight className="ml-2" size={16} /></Button></div>
                   </div>}
-                  {qStep === 5 && <div className="glass-card rounded-xl p-6 shadow-card">
+                  {qStep === 6 && <div className="glass-card rounded-xl p-6 shadow-card">
                     <h2 className="font-display text-xl font-bold mb-1">F/ Zone géographique</h2>
                     <RadioGroup label="Périmètre" options={["France entière", "Zones ciblées"]} value={apLoc || null} onChange={setApLoc} error={showErr && !apLoc ? "Obligatoire" : null} />
                     <div className="flex gap-3 mt-4"><Button variant="outline" className="flex-1" onClick={goQBack}><ArrowLeft className="mr-2" size={16} /> Retour</Button><Button className="flex-1 glow-gold" onClick={() => tryNext(!!apLoc, goQNext)}>Valider ma recherche <Check className="ml-2" size={16} /></Button></div>
