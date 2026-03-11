@@ -62,7 +62,7 @@ const mockCriteria = [
   },
   {
     id: 4,
-    name: "Commerce Paris Centre",
+    name: "Fiche 4",
     title: "Local commercial Centre-ville",
     type: "Local commercial",
     surface: "50 – 200m²",
