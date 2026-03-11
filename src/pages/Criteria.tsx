@@ -1,7 +1,9 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit, Trash2, Filter, X } from "lucide-react";
+import { getTypeColor } from "@/lib/propertyTypes";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
