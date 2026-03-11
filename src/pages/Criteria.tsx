@@ -36,7 +36,7 @@ const mockCriteria = [
   },
   {
     id: 2,
-    name: "Entrepôts Lyon",
+    name: "Fiche 2",
     title: "Entrepôts Lyon — > 2 000m²",
     type: "Entrepôt / activité",
     surface: "> 2 000m²",
