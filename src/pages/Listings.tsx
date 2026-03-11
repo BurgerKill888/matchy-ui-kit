@@ -184,32 +184,75 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
           )}
         </div>
 
-        {/* Type pills */}
-        <div className="flex flex-nowrap sm:flex-wrap gap-2 mt-4 mb-6 overflow-x-auto pb-2 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-          {typeList.map((t) => {
-            const color = t === "Tous" ? undefined : typeColors[t];
-            const isActive = typeFilter === t;
-            return (
+        {/* Filter button + active pills */}
+        <div className="flex items-center gap-2 mt-4 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs h-8 gap-1.5 ${typeFilter.length > 0 ? "border-primary text-primary" : ""}`}
+            onClick={() => setFilterModalOpen(true)}
+          >
+            <Filter size={13} />
+            {typeFilter.length > 0 ? `${typeFilter.length} filtre${typeFilter.length > 1 ? "s" : ""}` : "Filtres"}
+          </Button>
+        </div>
+
+        {/* Active filter pills */}
+        {typeFilter.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {typeFilter.map((t) => (
               <button
                 key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all duration-200 shrink-0 whitespace-nowrap ${
-                  isActive
-                    ? "border-primary text-primary-foreground bg-primary"
-                    : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
-                }`}
+                onClick={() => toggleType(t)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
               >
-                {color && (
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: color }}
-                  />
-                )}
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getTypeColor(t) }} />
                 {t}
+                <X size={10} />
               </button>
-            );
-          })}
-        </div>
+            ))}
+            <button onClick={() => setTypeFilter([])} className="px-2 py-1 rounded-full text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+              Tout effacer
+            </button>
+          </div>
+        )}
+
+        {/* Filter Modal */}
+        <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogTitle className="font-display text-lg">Filtres</DialogTitle>
+            <DialogDescription className="sr-only">Filtrer les annonces par type de bien</DialogDescription>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Type de bien</p>
+              <div className="flex flex-wrap gap-1.5">
+                {typeList.filter(t => t !== "Tous").map((t) => {
+                  const isActive = typeFilter.includes(t);
+                  const color = getTypeColor(t);
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => toggleType(t)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                        isActive ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                      }`}
+                    >
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              {typeFilter.length > 0 && (
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => setTypeFilter([])}>
+                  Réinitialiser
+                </Button>
+              )}
+              <Button size="sm" onClick={() => setFilterModalOpen(false)}>Appliquer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {filtered.length === 0 ? (
           <EmptyState

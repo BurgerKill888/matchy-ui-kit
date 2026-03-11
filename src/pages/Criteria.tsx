@@ -250,13 +250,9 @@ export default function CriteriaPage() {
                 transition={{ delay: i * 0.06 }}
               >
                 <div className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200 group relative">
-                  {/* Name badge top-right */}
-                  <span className="absolute top-3 right-3 bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                    {item.name}
-                  </span>
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-2">
-                    <div className="flex-1 min-w-0 pr-20">
-                      <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-start justify-between mb-3 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
                         <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs shrink-0">
                           {item.status === "active" ? "Active" : "Brouillon"}
                         </Badge>
@@ -278,6 +274,13 @@ export default function CriteriaPage() {
                         <Trash2 size={12} />
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Name badge - well integrated */}
+                  <div className="mb-3">
+                    <span className="inline-flex items-center gap-1 bg-primary/8 text-primary border border-primary/15 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                      {item.name}
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-3">

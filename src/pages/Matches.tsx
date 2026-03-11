@@ -664,13 +664,17 @@ function MatchListItem({ match, selected, onSelect, isFirstNew = false }: { matc
             {match.location} · {match.surface}
           </p>
 
-          {/* Footer: timer + closing */}
+          {/* Footer: status + timer + criteria name */}
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant={st.variant} className="text-[9px] h-3.5 px-1">{st.label}</Badge>
             <span className={`flex items-center gap-0.5 text-[10px] ${timerUrgent ? "text-warning" : "text-muted-foreground"}`}>
               {timerUrgent ? <AlertTriangle size={9} /> : <Clock size={9} />} {match.timer}
             </span>
-            
+            {match.criteriaName && (
+              <span className="ml-auto text-[9px] font-medium text-primary/70 bg-primary/8 border border-primary/15 px-1.5 py-0.5 rounded-full truncate max-w-[100px]">
+                {match.criteriaName}
+              </span>
+            )}
           </div>
         </div>
       </div>
