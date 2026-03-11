@@ -23,7 +23,7 @@ const dpeColors: Record<string, string> = {
 const mockCriteria = [
   {
     id: 1,
-    name: "Bureaux IDF",
+    name: "Fiche 1",
     title: "Bureaux IDF — 200 à 500m²",
     type: "Bureaux",
     surface: "200 – 500m²",
