@@ -49,7 +49,7 @@ const mockCriteria = [
   },
   {
     id: 3,
-    name: "Terrains Bordeaux",
+    name: "Fiche 3",
     title: "Terrains constructibles Bordeaux",
     type: "Terrain à potentiel",
     surface: "1 000 – 5 000m²",
