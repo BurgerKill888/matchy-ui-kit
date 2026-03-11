@@ -1,6 +1,7 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
-import { Plus, Eye, MapPin, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Images, Zap, MoreVertical, Pencil, Trash2, Pause, Play } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Eye, MapPin, Ruler, Heart, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, Lock, Images, Zap, MoreVertical, Pencil, Trash2, Pause, Play, Filter, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
