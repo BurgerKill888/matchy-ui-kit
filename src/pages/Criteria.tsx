@@ -1,7 +1,9 @@
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Heart, MapPin, Euro, Ruler, Zap, Edit, Trash2, Filter, X } from "lucide-react";
+import { getTypeColor } from "@/lib/propertyTypes";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -86,8 +88,9 @@ function DpeBadge({ label }: { label: string }) {
 }
 
 export default function CriteriaPage() {
-  const [typeFilter, setTypeFilter] = useState("Tous");
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState("Tous");
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<typeof mockCriteria[0] | null>(null);
@@ -102,11 +105,17 @@ export default function CriteriaPage() {
     setDeleteDoneOpen(true);
   }
 
-  const types = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison"];
+  const types = ["Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison"];
   const statuses = ["Tous", "Active", "Brouillon"];
 
+  function toggleType(t: string) {
+    setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
+
+  const activeFilterCount = typeFilter.length + (statusFilter !== "Tous" ? 1 : 0);
+
   const filtered = mockCriteria.filter((c) => {
-    const matchType = typeFilter === "Tous" || c.type === typeFilter;
+    const matchType = typeFilter.length === 0 || typeFilter.includes(c.type);
     const matchStatus = statusFilter === "Tous" || (statusFilter === "Active" ? c.status === "active" : c.status === "draft");
     return matchType && matchStatus;
   });
@@ -126,31 +135,102 @@ export default function CriteriaPage() {
           </Link>
         </div>
 
-        {/* Filters only — no search bar */}
-        <div className="space-y-3 mb-6">
-          <div className="flex flex-wrap gap-2">
-            {types.map((t) => (
+        {/* Filter button */}
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs h-8 gap-1.5 ${activeFilterCount > 0 ? "border-primary text-primary" : ""}`}
+            onClick={() => setFilterModalOpen(true)}
+          >
+            <Filter size={13} />
+            {activeFilterCount > 0 ? `${activeFilterCount} filtre${activeFilterCount > 1 ? "s" : ""}` : "Filtres"}
+          </Button>
+        </div>
+
+        {/* Active filter pills */}
+        {activeFilterCount > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {typeFilter.map((t) => (
               <button
                 key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${typeFilter === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
+                onClick={() => toggleType(t)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
               >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getTypeColor(t) }} />
                 {t}
+                <X size={10} />
               </button>
             ))}
-          </div>
-          <div className="flex gap-2">
-            {statuses.map((s) => (
+            {statusFilter !== "Tous" && (
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${statusFilter === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
+                onClick={() => setStatusFilter("Tous")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-accent text-accent-foreground border border-border hover:bg-accent/80 transition-colors"
               >
-                {s}
+                {statusFilter}
+                <X size={10} />
               </button>
-            ))}
+            )}
+            <button onClick={() => { setTypeFilter([]); setStatusFilter("Tous"); }} className="px-2 py-1 rounded-full text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+              Tout effacer
+            </button>
           </div>
-        </div>
+        )}
+
+        {/* Filter Modal */}
+        <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogTitle className="font-display text-lg">Filtres</DialogTitle>
+            <DialogDescription className="sr-only">Filtrer les fiches par type de bien et statut</DialogDescription>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Type de bien</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {types.map((t) => {
+                    const isActive = typeFilter.includes(t);
+                    const color = getTypeColor(t);
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => toggleType(t)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                          isActive ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                        }`}
+                      >
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Statut</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {statuses.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                        statusFilter === s ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              {activeFilterCount > 0 && (
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setTypeFilter([]); setStatusFilter("Tous"); }}>
+                  Réinitialiser
+                </Button>
+              )}
+              <Button size="sm" onClick={() => setFilterModalOpen(false)}>Appliquer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {filtered.length === 0 ? (
           <EmptyState
@@ -170,13 +250,9 @@ export default function CriteriaPage() {
                 transition={{ delay: i * 0.06 }}
               >
                 <div className="glass-card rounded-xl p-5 hover:border-primary/30 hover:shadow-card transition-all duration-200 group relative">
-                  {/* Name badge top-right */}
-                  <span className="absolute top-3 right-3 bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                    {item.name}
-                  </span>
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-3 gap-2">
-                    <div className="flex-1 min-w-0 pr-20">
-                      <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-start justify-between mb-3 gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
                         <Badge variant={item.status === "active" ? "default" : "secondary"} className="text-xs shrink-0">
                           {item.status === "active" ? "Active" : "Brouillon"}
                         </Badge>
@@ -198,6 +274,13 @@ export default function CriteriaPage() {
                         <Trash2 size={12} />
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Name badge - well integrated */}
+                  <div className="mb-3">
+                    <span className="inline-flex items-center gap-1 bg-primary/8 text-primary border border-primary/15 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                      {item.name}
+                    </span>
                   </div>
 
                   <div className="flex flex-wrap gap-2 text-xs text-muted-foreground mb-3">
