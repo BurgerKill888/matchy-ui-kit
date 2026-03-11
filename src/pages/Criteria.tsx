@@ -23,7 +23,7 @@ const dpeColors: Record<string, string> = {
 const mockCriteria = [
   {
     id: 1,
-    name: "Bureaux IDF",
+    name: "Fiche 1",
     title: "Bureaux IDF — 200 à 500m²",
     type: "Bureaux",
     surface: "200 – 500m²",
@@ -36,7 +36,7 @@ const mockCriteria = [
   },
   {
     id: 2,
-    name: "Entrepôts Lyon",
+    name: "Fiche 2",
     title: "Entrepôts Lyon — > 2 000m²",
     type: "Entrepôt / activité",
     surface: "> 2 000m²",
@@ -49,7 +49,7 @@ const mockCriteria = [
   },
   {
     id: 3,
-    name: "Terrains Bordeaux",
+    name: "Fiche 3",
     title: "Terrains constructibles Bordeaux",
     type: "Terrain à potentiel",
     surface: "1 000 – 5 000m²",
@@ -62,7 +62,7 @@ const mockCriteria = [
   },
   {
     id: 4,
-    name: "Commerce Paris Centre",
+    name: "Fiche 4",
     title: "Local commercial Centre-ville",
     type: "Local commercial",
     surface: "50 – 200m²",
