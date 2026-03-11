@@ -136,7 +136,8 @@ interface ListingsPageProps {
 
 export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
   const navigate = useNavigate();
-  const [typeFilter, setTypeFilter] = useState("Tous");
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteDoneOpen, setDeleteDoneOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<typeof mockListings[0] | null>(null);
