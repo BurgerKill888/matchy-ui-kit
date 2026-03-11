@@ -105,11 +105,17 @@ export default function CriteriaPage() {
     setDeleteDoneOpen(true);
   }
 
-  const types = ["Tous", "Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison"];
+  const types = ["Bureaux", "Local commercial", "Terrain à potentiel", "Entrepôt / activité", "Immeuble", "Appartement", "Maison"];
   const statuses = ["Tous", "Active", "Brouillon"];
 
+  function toggleType(t: string) {
+    setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
+
+  const activeFilterCount = typeFilter.length + (statusFilter !== "Tous" ? 1 : 0);
+
   const filtered = mockCriteria.filter((c) => {
-    const matchType = typeFilter === "Tous" || c.type === typeFilter;
+    const matchType = typeFilter.length === 0 || typeFilter.includes(c.type);
     const matchStatus = statusFilter === "Tous" || (statusFilter === "Active" ? c.status === "active" : c.status === "draft");
     return matchType && matchStatus;
   });
