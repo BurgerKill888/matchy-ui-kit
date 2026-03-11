@@ -143,7 +143,11 @@ export default function ListingsPage({ mode = "listings" }: ListingsPageProps) {
   const [deleteTarget, setDeleteTarget] = useState<typeof mockListings[0] | null>(null);
   const [pauseTarget, setPauseTarget] = useState<typeof mockListings[0] | null>(null);
 
-  const filtered = typeFilter === "Tous" ? mockListings : mockListings.filter((l) => l.type === typeFilter);
+  const filtered = typeFilter.length === 0 ? mockListings : mockListings.filter((l) => typeFilter.includes(l.type));
+
+  function toggleType(t: string) {
+    setTypeFilter(typeFilter.includes(t) ? typeFilter.filter((x) => x !== t) : [...typeFilter, t]);
+  }
 
   function handleDeleteClick(e: React.MouseEvent, item: typeof mockListings[0]) {
     e.preventDefault();
