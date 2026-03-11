@@ -135,31 +135,102 @@ export default function CriteriaPage() {
           </Link>
         </div>
 
-        {/* Filters only — no search bar */}
-        <div className="space-y-3 mb-6">
-          <div className="flex flex-wrap gap-2">
-            {types.map((t) => (
+        {/* Filter button */}
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            className={`text-xs h-8 gap-1.5 ${activeFilterCount > 0 ? "border-primary text-primary" : ""}`}
+            onClick={() => setFilterModalOpen(true)}
+          >
+            <Filter size={13} />
+            {activeFilterCount > 0 ? `${activeFilterCount} filtre${activeFilterCount > 1 ? "s" : ""}` : "Filtres"}
+          </Button>
+        </div>
+
+        {/* Active filter pills */}
+        {activeFilterCount > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {typeFilter.map((t) => (
               <button
                 key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${typeFilter === t ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
+                onClick={() => toggleType(t)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
               >
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getTypeColor(t) }} />
                 {t}
+                <X size={10} />
               </button>
             ))}
-          </div>
-          <div className="flex gap-2">
-            {statuses.map((s) => (
+            {statusFilter !== "Tous" && (
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 ${statusFilter === s ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"}`}
+                onClick={() => setStatusFilter("Tous")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-accent text-accent-foreground border border-border hover:bg-accent/80 transition-colors"
               >
-                {s}
+                {statusFilter}
+                <X size={10} />
               </button>
-            ))}
+            )}
+            <button onClick={() => { setTypeFilter([]); setStatusFilter("Tous"); }} className="px-2 py-1 rounded-full text-[10px] text-muted-foreground hover:text-foreground transition-colors">
+              Tout effacer
+            </button>
           </div>
-        </div>
+        )}
+
+        {/* Filter Modal */}
+        <Dialog open={filterModalOpen} onOpenChange={setFilterModalOpen}>
+          <DialogContent className="max-w-sm">
+            <DialogTitle className="font-display text-lg">Filtres</DialogTitle>
+            <DialogDescription className="sr-only">Filtrer les fiches par type de bien et statut</DialogDescription>
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Type de bien</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {types.map((t) => {
+                    const isActive = typeFilter.includes(t);
+                    const color = getTypeColor(t);
+                    return (
+                      <button
+                        key={t}
+                        onClick={() => toggleType(t)}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                          isActive ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                        }`}
+                      >
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Statut</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {statuses.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => setStatusFilter(s)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all ${
+                        statusFilter === s ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              {activeFilterCount > 0 && (
+                <Button variant="ghost" size="sm" className="text-xs" onClick={() => { setTypeFilter([]); setStatusFilter("Tous"); }}>
+                  Réinitialiser
+                </Button>
+              )}
+              <Button size="sm" onClick={() => setFilterModalOpen(false)}>Appliquer</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {filtered.length === 0 ? (
           <EmptyState
