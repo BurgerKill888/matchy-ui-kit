@@ -57,10 +57,10 @@ function SpaceSwitcher({ collapsed, mobile }: { collapsed: boolean; mobile?: boo
     return (
       <button
         onClick={handleSwitch}
-        className="md:hidden flex items-center gap-1.5 text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-full px-2 py-1 hover:bg-secondary border border-border"
+        className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors rounded-lg px-2.5 py-1.5 hover:bg-secondary border border-border"
       >
-        <ArrowUpDown size={10} className="shrink-0" />
-        <span>{space === "vendeur" ? "V" : "A"}</span>
+        <ArrowUpDown size={12} className="shrink-0" />
+        <span className="font-medium">{targetSpace === "vendeur" ? "Vendeur" : "Acquéreur"}</span>
       </button>
     );
   }
