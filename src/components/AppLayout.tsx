@@ -104,6 +104,7 @@ export default function AppLayout({ children }: {children: React.ReactNode;}) {
           <div className="flex items-center gap-1">
             <SpaceSwitcher collapsed={false} mobile />
             <NotificationPanel />
+
             <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               <LogOut size={18} />
             </Button>
